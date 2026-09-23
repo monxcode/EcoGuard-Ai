@@ -18,7 +18,7 @@ export function formatTempFull(celsius: number | null | undefined, units: Units)
 
 export function formatWind(kmh: number | null | undefined, units: Units): string {
   if (kmh === null || kmh === undefined || !Number.isFinite(kmh)) return "—";
-  return units === "imperial" ? `${Math.round(kmh * 0.621)} mph` : `${Math.round(kmh)} km/h`;
+  return units === "imperial" ? `${(kmh * 0.621).toFixed(1)} mph` : `${kmh.toFixed(1)} km/h`;
 }
 
 export function formatDistance(km: number, units: Units): string {
@@ -41,12 +41,54 @@ export function formatTimestamp(iso: string): string {
   });
 }
 
-/** Short clock time (e.g. "14:30") from an ISO timestamp — for provider observation times. */
-export function formatTime(iso: string | null | undefined): string {
+/** Human label for a UTC offset in seconds, e.g. 19800 → "UTC+5:30". */
+export function formatUtcOffset(offsetSec: number | null | undefined): string {
+  if (offsetSec === null || offsetSec === undefined || !Number.isFinite(offsetSec)) return "UTC";
+  if (offsetSec === 0) return "UTC";
+  const sign = offsetSec > 0 ? "+" : "-";
+  const abs = Math.abs(offsetSec);
+  const hours = Math.floor(abs / 3600);
+  const minutes = Math.floor((abs % 3600) / 60);
+  return minutes === 0 ? `UTC${sign}${hours}` : `UTC${sign}${hours}:${String(minutes).padStart(2, "0")}`;
+}
+
+/**
+ * Full timestamp rendered in the location's timezone (offset from the provider).
+ * Falls back to UTC when no offset is known. Independent of the browser timezone,
+ * so "Last updated" matches OpenWeather's city-local time.
+ */
+export function formatTimestampInOffset(
+  iso: string | null | undefined,
+  offsetSec: number | null | undefined,
+): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  const shifted = new Date(date.getTime() + (offsetSec ?? 0) * 1000);
+  return shifted.toLocaleString(undefined, {
+    timeZone: "UTC",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/** Short clock time in the location's timezone (offset from the provider). */
+export function formatTimeInOffset(
+  iso: string | null | undefined,
+  offsetSec: number | null | undefined,
+): string {
   if (!iso) return "—";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  const shifted = new Date(date.getTime() + (offsetSec ?? 0) * 1000);
+  return shifted.toLocaleTimeString(undefined, {
+    timeZone: "UTC",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function formatPercent(fraction: number): string {

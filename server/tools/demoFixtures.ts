@@ -204,6 +204,7 @@ export function buildDemoAir(locationId: string): AirReading {
 
 export function buildDemoWeather(locationId: string): WeatherReading {
   const p = profileFor(locationId);
+  const loc = findLocation(locationId);
   return {
     temperature: p.temp,
     apparentTemperature: Math.round(heatIndexCelsius(p.temp, p.humidity) * 10) / 10,
@@ -218,6 +219,12 @@ export function buildDemoWeather(locationId: string): WeatherReading {
     weatherDescription: p.weatherDescription,
     icon: p.weatherIcon,
     timestamp: demoWeatherTimestamp(),
+    // Demo anchor is today 12:00 UTC — offset 0 keeps displayed time aligned with that anchor.
+    timezoneOffset: 0,
+    providerCityName: loc.name,
+    providerCountry: null,
+    providerLat: loc.lat,
+    providerLon: loc.lon,
   };
 }
 

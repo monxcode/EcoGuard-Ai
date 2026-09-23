@@ -10,7 +10,12 @@ import { RiskPill } from "../components/ui/RiskPill";
 import { ErrorState, PageSkeleton } from "../components/ui/states";
 import { AgentResultCard } from "../components/agents/AgentResultCard";
 import { TemperatureRangeChart } from "../components/charts/Charts";
-import { formatTempFull, formatTime, formatWind } from "../utils/format";
+import {
+  formatTempFull,
+  formatTimeInOffset,
+  formatUtcOffset,
+  formatWind,
+} from "../utils/format";
 import { weatherIcon } from "../utils/weatherIcon";
 
 export default function ClimatePage() {
@@ -36,7 +41,7 @@ export default function ClimatePage() {
     <div className="space-y-6">
       <PageHeader
         title="Climate & Heat Intelligence"
-        subtitle={`${data.location.name} — HeatShield assessment`}
+        subtitle={`${data.location.name}, ${data.location.region} (${data.location.lat}, ${data.location.lon}) — HeatShield assessment`}
         actions={
           <div className="flex items-center gap-2">
             <DataStateBadge state={data.states.weather} />
@@ -87,7 +92,9 @@ export default function ClimatePage() {
                 : "—"}
             </span>
             <span className="text-xs text-slate-400">
-              {data.sources.weather} · observed {formatTime(weather?.timestamp)}
+              {data.sources.weather} · observed{" "}
+              {formatTimeInOffset(weather?.timestamp, weather?.timezoneOffset)}{" "}
+              {formatUtcOffset(weather?.timezoneOffset)}
             </span>
           </div>
         </div>

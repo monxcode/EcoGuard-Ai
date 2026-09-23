@@ -31,8 +31,9 @@
     (current + 5-day; no demo fallback in live mode; verified on `/api/data-sources`)
 18. Searchable city/location input — ✅ OpenWeather Geocoding (`/api/locations/search`) →
     self-contained `locationId` → existing `findLocation` architecture (no parallel registry)
-18. Searchable city/location input — ✅ OpenWeather Geocoding (`/api/locations/search`) →
-    self-contained `locationId` → existing `findLocation` architecture (no parallel registry)
+19. Weather data fidelity vs OpenWeather — ✅ provider precision preserved (no pre-rounding),
+    city-local "Last updated" via provider timezone offset, and the request endpoint + selected
+    coords + provider-returned city/grid coords shown in the UI for debugging
 
 **Hard rule:** do not sacrifice a working P0 feature to add multiple unfinished P2 features.
 If time runs short, a smaller set of fully-working P0/P1 features beats a broad set of

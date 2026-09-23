@@ -72,6 +72,47 @@ describe("OpenWeather normalizers", () => {
     expect(reading.weatherDescription).toBe("scattered clouds");
     expect(reading.icon).toBe("03d");
     expect(reading.timestamp).toBe(new Date(currentFixture.dt * 1000).toISOString());
+    // Payload has no city/coord/timezone block — mapped to null, never invented.
+    expect(reading.timezoneOffset).toBeNull();
+    expect(reading.providerCityName).toBeNull();
+    expect(reading.providerCountry).toBeNull();
+    expect(reading.providerLat).toBeNull();
+    expect(reading.providerLon).toBeNull();
+  });
+
+  it("maps provider city, grid coordinates and timezone from the full payload", () => {
+    const reading = normalizeCurrentWeather({
+      ...currentFixture,
+      name: "London",
+      timezone: 3600,
+      coord: { lat: 51.5074, lon: -0.1278 },
+      sys: { country: "GB" },
+    });
+    expect(reading.providerCityName).toBe("London");
+    expect(reading.providerCountry).toBe("GB");
+    expect(reading.providerLat).toBe(51.5074);
+    expect(reading.providerLon).toBe(-0.1278);
+    expect(reading.timezoneOffset).toBe(3600);
+  });
+
+  it("preserves provider precision — no pre-rounding of temp/feels (API is source of truth)", () => {
+    const reading = normalizeCurrentWeather({
+      dt: 1_758_600_000,
+      main: { temp: 17.11, feels_like: 17.04, humidity: 73 },
+      wind: { speed: 1.64, deg: 200 },
+      weather: [{ main: "Clear", description: "clear sky", icon: "01d" }],
+      name: "Udaipur",
+      timezone: 19800,
+      coord: { lat: 24.5859, lon: 73.7127 },
+      sys: { country: "IN" },
+    });
+    expect(reading.temperature).toBe(17.11);
+    expect(reading.apparentTemperature).toBe(17.04);
+    expect(reading.humidity).toBe(73);
+    expect(reading.windDirection).toBe(200);
+    // m/s → km/h is the only conversion (1.64 * 3.6 = 5.904 → 5.9)
+    expect(reading.windSpeed).toBeCloseTo(5.9, 5);
+    expect(reading.timezoneOffset).toBe(19800);
   });
 
   it("maps missing optional current-weather fields to null (never fabricates)", () => {

@@ -20,6 +20,10 @@ const GEO_BASE_URL = "https://api.openweathermap.org/geo/1.0";
 /** Critical current-weather fields — absent ⇒ whole reading unavailable (never fabricated). */
 const currentWeatherSchema = z.object({
   dt: z.number(),
+  name: z.string().optional(),
+  timezone: z.number().optional(),
+  coord: z.object({ lat: z.number(), lon: z.number() }).optional(),
+  sys: z.object({ country: z.string().optional() }).optional(),
   main: z.object({
     temp: z.number(),
     feels_like: z.number().optional(),
@@ -120,17 +124,18 @@ function fail<T>(source: string, error: string): OpenWeatherResult<T> {
 /**
  * Normalize a validated OpenWeather current-weather payload into WeatherReading.
  * Optional fields map to null when absent — never invented.
+ * Numeric fields keep provider precision (the API response is the source of truth);
+ * display-time formatting rounds for readability. Wind m/s → km/h is the only conversion.
  */
 export function normalizeCurrentWeather(raw: unknown): WeatherReading {
   const json = currentWeatherSchema.parse(raw);
   const condition = json.weather[0];
   return {
-    temperature: round1(json.main.temp),
-    apparentTemperature:
-      typeof json.main.feels_like === "number" ? round1(json.main.feels_like) : null,
-    humidity: Math.round(json.main.humidity),
+    temperature: json.main.temp,
+    apparentTemperature: typeof json.main.feels_like === "number" ? json.main.feels_like : null,
+    humidity: json.main.humidity,
     windSpeed: metersPerSecondToKmh(json.wind.speed),
-    windDirection: typeof json.wind.deg === "number" ? Math.round(json.wind.deg) : null,
+    windDirection: typeof json.wind.deg === "number" ? json.wind.deg : null,
     precipitation: round1((json.rain?.["1h"] ?? 0) + (json.snow?.["1h"] ?? 0)),
     pressure: typeof json.main.pressure === "number" ? json.main.pressure : null,
     cloudiness: typeof json.clouds?.all === "number" ? json.clouds.all : null,
@@ -139,6 +144,11 @@ export function normalizeCurrentWeather(raw: unknown): WeatherReading {
     weatherDescription: condition.description,
     icon: condition.icon,
     timestamp: new Date(json.dt * 1000).toISOString(),
+    timezoneOffset: typeof json.timezone === "number" ? json.timezone : null,
+    providerCityName: typeof json.name === "string" && json.name ? json.name : null,
+    providerCountry: json.sys?.country ?? null,
+    providerLat: json.coord?.lat ?? null,
+    providerLon: json.coord?.lon ?? null,
   };
 }
 

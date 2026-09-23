@@ -1,7 +1,13 @@
 import { aqiCategory } from "../../../shared/aqi";
 import type { DashboardPayload } from "../../../shared/types";
 import { useApp } from "../../context/AppContext";
-import { formatTempFull, formatTimestamp, formatTime, formatWind } from "../../utils/format";
+import {
+  formatTempFull,
+  formatTimestamp,
+  formatTimestampInOffset,
+  formatUtcOffset,
+  formatWind,
+} from "../../utils/format";
 import { weatherIcon } from "../../utils/weatherIcon";
 import { PageHeader } from "../ui/PageHeader";
 import { Card, CardBody, CardHeader } from "../ui/Card";
@@ -30,7 +36,7 @@ export function DashboardView({ data }: { data: DashboardPayload }) {
     <div className="space-y-6">
       <PageHeader
         title="ClimatePulse"
-        subtitle={`${data.location.name}, ${data.location.region} — updated ${formatTimestamp(data.generatedAt)}`}
+        subtitle={`${data.location.name}, ${data.location.region} (${data.location.lat}, ${data.location.lon}) — updated ${formatTimestamp(data.generatedAt)}`}
         actions={
           data.overall ? <RiskPill level={data.overall.result.riskLevel} size="lg" /> : null
         }
@@ -101,8 +107,25 @@ export function DashboardView({ data }: { data: DashboardPayload }) {
                 {weather.pressure !== null ? ` · ${weather.pressure} hPa` : ""}
                 {weather.cloudiness !== null ? ` · ${weather.cloudiness}% cloud` : ""}
               </p>
-              <p className="mt-1 text-[11px] text-slate-400">
-                {data.sources.weather} · observed {formatTime(weather.timestamp)}
+              <p className="mt-1 text-[11px] text-slate-400 break-words">
+                /data/2.5/weather · sent {data.location.lat.toFixed(4)},{" "}
+                {data.location.lon.toFixed(4)}
+                {weather.providerLat !== null &&
+                weather.providerLon !== null &&
+                (Math.abs(weather.providerLat - data.location.lat) > 0.0005 ||
+                  Math.abs(weather.providerLon - data.location.lon) > 0.0005)
+                  ? ` · grid ${weather.providerLat.toFixed(4)}, ${weather.providerLon.toFixed(4)}`
+                  : ""}
+              </p>
+              <p className="mt-0.5 text-[11px] text-slate-400 break-words">
+                {data.sources.weather}
+                {weather.providerCityName
+                  ? ` · ${weather.providerCityName}${weather.providerCountry ? `, ${weather.providerCountry}` : ""}`
+                  : ""}
+              </p>
+              <p className="mt-0.5 text-[11px] text-slate-400 break-words">
+                Last updated {formatTimestampInOffset(weather.timestamp, weather.timezoneOffset)}{" "}
+                ({formatUtcOffset(weather.timezoneOffset)})
               </p>
             </>
           ) : (

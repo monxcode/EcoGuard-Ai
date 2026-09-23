@@ -198,9 +198,10 @@ export function LocationSearch({
                   <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-slate-400" aria-hidden />
                   <span className="min-w-0">
                     <span className="block truncate">{loc.name}</span>
-                    {loc.region ? (
-                      <span className="block truncate text-xs text-slate-500">{loc.region}</span>
-                    ) : null}
+                    <span className="block truncate text-xs text-slate-500">
+                      {loc.region ? `${loc.region} · ` : ""}
+                      {loc.lat.toFixed(4)}, {loc.lon.toFixed(4)}
+                    </span>
                   </span>
                 </button>
               ))

@@ -76,6 +76,15 @@ export interface WeatherReading {
   icon: string | null;
   /** Provider observation time (ISO). Demo fixtures use a deterministic anchor. */
   timestamp: string;
+  /** Provider timezone offset from UTC (seconds), when supplied — used to show observation time in the city's local time. */
+  timezoneOffset: number | null;
+  /** City name returned by the weather provider — cross-check against the selected location. */
+  providerCityName: string | null;
+  /** Country code returned by the weather provider (e.g. "GB"). */
+  providerCountry: string | null;
+  /** Coordinates the provider actually resolved (may snap to its grid; may differ slightly from the request). */
+  providerLat: number | null;
+  providerLon: number | null;
 }
 
 export interface HourlyPoint {
