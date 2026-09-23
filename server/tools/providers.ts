@@ -123,8 +123,27 @@ async function fetchDailyAqiMap(location: AppLocation): Promise<Map<string, numb
 }
 
 function failed(source: string, err: unknown): ToolResponse<never> {
-  const message = err instanceof Error ? err.message : String(err);
-  return { data: null, state: "unavailable", source, error: message };
+  return { data: null, state: "unavailable", source, error: airProviderErrorMessage(err) };
+}
+
+/**
+ * Friendly, keyless-safe text for air-quality provider failures.
+ * Never includes request URLs, raw fetch/abort wording, or anything else
+ * that wouldn't make sense (or be safe) in the UI error banner.
+ */
+export function airProviderErrorMessage(err: unknown): string {
+  if (err instanceof Error) {
+    if (err.name === "AbortError") return "air-quality provider timed out";
+    if (err.message.startsWith("HTTP")) return "air-quality provider error";
+    if (err.message === "missing us_aqi/pm2_5 in response") {
+      return "air-quality provider returned no AQI value";
+    }
+    if (err.message === "no hourly data") {
+      return "air-quality provider returned no hourly AQI data";
+    }
+    if (err instanceof SyntaxError) return "air-quality provider returned an unexpected response";
+  }
+  return "air-quality provider unavailable";
 }
 
 function num(value: number | null | undefined): number | null {
@@ -184,7 +203,7 @@ function normalizeHourlyAir(json: HourlyAirJson): HourlyPoint[] {
   });
 }
 
-function dayAverageAqi(json: HourlyAirJson): Map<string, number> {
+export function dayAverageAqi(json: HourlyAirJson): Map<string, number> {
   const sums = new Map<string, { total: number; count: number }>();
   const h = json.hourly;
   if (!h?.time) return new Map();
@@ -207,19 +226,41 @@ function dayAverageAqi(json: HourlyAirJson): Map<string, number> {
   return result;
 }
 
-async function fetchJson(url: string, timeoutMs = 8000): Promise<unknown> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { signal: controller.signal, headers: { accept: "application/json" } });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } finally {
-    clearTimeout(timer);
+const FETCH_TIMEOUT_MS = 12_000;
+const FETCH_RETRY_DELAY_MS = 400;
+
+/**
+ * JSON GET with a 12-second timeout and one retry on transient network/timeout
+ * errors — Open-Meteo connections from this network occasionally hang past 8s
+ * on a stale socket, and a fresh attempt recovers immediately. HTTP status
+ * errors are never retried.
+ */
+async function fetchJson(url: string, timeoutMs = FETCH_TIMEOUT_MS): Promise<unknown> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, {
+          signal: controller.signal,
+          headers: { accept: "application/json" },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    } catch (err) {
+      const isHttpError = err instanceof Error && err.message.startsWith("HTTP");
+      if (isHttpError || attempt >= 1) throw err;
+      await new Promise((r) => setTimeout(r, FETCH_RETRY_DELAY_MS));
+    }
   }
 }
 
 const CACHE_TTL_MS = 60_000;
+/** Failed/unavailable responses are cached briefly — enough to avoid hammering a struggling provider, short enough that recovery is quick. */
+const FAILURE_CACHE_TTL_MS = 15_000;
 const cache = new Map<string, { expires: number; value: unknown }>();
 
 function preferLive(): boolean {
@@ -231,12 +272,22 @@ function scopedKey(key: string): string {
   return `${preferLive() ? "L" : "D"}:${key}`;
 }
 
-async function cached<T>(key: string, loader: () => Promise<T>): Promise<T> {
+async function cached<T extends { data: unknown; error?: string }>(
+  key: string,
+  loader: () => Promise<T>,
+): Promise<T> {
   const fullKey = scopedKey(key);
   const hit = cache.get(fullKey);
   if (hit && hit.expires > Date.now()) return hit.value as T;
   const value = await loader();
-  cache.set(fullKey, { expires: Date.now() + CACHE_TTL_MS, value });
+  // Successes get the full TTL; failures only a short one, so a transient
+  // provider timeout recovers on the next request instead of pinning an
+  // "unavailable" result for a whole minute.
+  const isFailure = value.data === null || Boolean(value.error);
+  cache.set(fullKey, {
+    expires: Date.now() + (isFailure ? FAILURE_CACHE_TTL_MS : CACHE_TTL_MS),
+    value,
+  });
   return value;
 }
 
@@ -294,10 +345,7 @@ async function loadLiveDaily(location: AppLocation): Promise<ToolResponse<DailyP
     try {
       aqiByDay = await fetchDailyAqiMap(location);
     } catch (err) {
-      aqiError =
-        err instanceof Error && err.message.startsWith("HTTP")
-          ? "air-quality provider error"
-          : "air-quality provider unavailable";
+      aqiError = airProviderErrorMessage(err);
     }
     const points: DailyPoint[] = forecast.data.map((draft) =>
       forecastDraftToDaily(draft, aqiByDay.get(draft.dateKey) ?? null),
