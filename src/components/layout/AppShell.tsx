@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useApp } from "../../context/AppContext";
-import { LOCATIONS } from "../../../shared/locations";
+import { LocationSearch } from "../ui/LocationSearch";
 import { AlertsBell } from "./AlertsBell";
 import { DataStateBadge } from "../ui/DataStateBadge";
 
@@ -52,37 +52,30 @@ const NAV_SECTIONS = [
   },
 ] as const;
 
-function LocationSelect({ compact = false }: { compact?: boolean }) {
-  const { settings, setLocation } = useApp();
-  return (
-    <label className={`flex items-center gap-2 ${compact ? "" : "hidden sm:flex"}`}>
-      <span className="sr-only">Select location</span>
-      <select
-        value={settings.locationId}
-        onChange={(e) => setLocation(e.target.value)}
-        className="h-9 max-w-[10rem] sm:max-w-none bg-white border border-slate-200 rounded-lg px-2.5 text-sm text-slate-700 hover:border-slate-300"
-      >
-        {LOCATIONS.map((loc) => (
-          <option key={loc.id} value={loc.id}>
-            {loc.name}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function DemoBanner() {
+function ModeBanner() {
   const { settings } = useApp();
-  if (!settings.demoMode) return null;
+  if (settings.demoMode) {
+    return (
+      <div
+        className="bg-slate-900 text-slate-100 text-center text-xs font-semibold tracking-wide py-1.5 px-4 flex items-center justify-center gap-2"
+        role="status"
+      >
+        <TestTube className="w-3.5 h-3.5 text-amber-400" aria-hidden />
+        DEMO MODE — deterministic demo data, not live measurements
+        <Link to="/settings" className="underline text-slate-300 hover:text-white font-normal">
+          manage
+        </Link>
+      </div>
+    );
+  }
   return (
     <div
-      className="bg-slate-900 text-slate-100 text-center text-xs font-semibold tracking-wide py-1.5 px-4 flex items-center justify-center gap-2"
+      className="bg-emerald-50 text-emerald-800 border-b border-emerald-200 text-center text-xs font-semibold tracking-wide py-1.5 px-4 flex items-center justify-center gap-2"
       role="status"
     >
-      <TestTube className="w-3.5 h-3.5 text-amber-400" aria-hidden />
-      DEMO MODE — deterministic demo data, not live measurements
-      <Link to="/settings" className="underline text-slate-300 hover:text-white font-normal">
+      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden />
+      LIVE MODE — real provider data
+      <Link to="/settings" className="underline text-emerald-700 hover:text-emerald-900 font-normal">
         manage
       </Link>
     </div>
@@ -148,7 +141,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <DemoBanner />
+      <ModeBanner />
       <div className="flex flex-1 min-h-0">
         {/* Desktop sidebar */}
         <aside className="hidden lg:flex w-60 shrink-0 flex-col bg-white border-r border-slate-200">
@@ -199,7 +192,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Menu className="w-5 h-5" aria-hidden />
             </button>
-            <LocationSelect />
+            <LocationSearch variant="header" label="Search location" id="header-location" />
             <div className="flex-1" />
             <span className="hidden md:block">
               <DataStateBadge state={dataModeState} />

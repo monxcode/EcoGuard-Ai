@@ -91,13 +91,13 @@ export function AqiPmTrendChart({ data }: { data: HourlyPoint[] }) {
 
 export function TemperatureRangeChart({ data }: { data: DailyPoint[] }) {
   if (data.length === 0) {
-    return <EmptyState title="Temperature forecast unavailable" description="No forecast data for this location." />;
+    return <EmptyState title="Weather forecast unavailable" description="No forecast data for this location." />;
   }
-  const summary = `Forecast highs and lows: ${data
+  const summary = `Weather forecast highs and lows: ${data
     .map((d) => `${d.day} high ${d.tempMax}, low ${d.tempMin}`)
     .join("; ")}.`;
   return chartFrame(
-    "7-day temperature range",
+    "7-day weather forecast temperature range",
     summary,
     240,
     <ResponsiveContainer width="100%" height="100%">
@@ -115,11 +115,11 @@ export function TemperatureRangeChart({ data }: { data: DailyPoint[] }) {
 
 export function RainfallChart({ data }: { data: DailyPoint[] }) {
   if (data.length === 0) {
-    return <EmptyState title="Rainfall forecast unavailable" description="No forecast data for this location." />;
+    return <EmptyState title="Weather forecast unavailable" description="No forecast data for this location." />;
   }
-  const summary = `Forecast rainfall millimetres: ${data.map((d) => `${d.day} ${d.precipitationMm}`).join(", ")}.`;
+  const summary = `Weather forecast rainfall millimetres: ${data.map((d) => `${d.day} ${d.precipitationMm}`).join(", ")}.`;
   return chartFrame(
-    "7-day rainfall forecast",
+    "7-day weather forecast rainfall",
     summary,
     220,
     <ResponsiveContainer width="100%" height="100%">
@@ -187,14 +187,23 @@ export function PollutantRatioChart({
 }
 
 export function DailyAqiBarChart({ data }: { data: DailyPoint[] }) {
+  const withAqi = data.filter((d) => d.aqi !== null);
   if (data.length === 0) return <EmptyState title="AQI forecast unavailable" />;
-  const summary = `Forecast daily AQI: ${data.map((d) => `${d.day} ${d.aqi}`).join(", ")}.`;
+  if (withAqi.length === 0) {
+    return (
+      <EmptyState
+        title="AQI forecast unavailable"
+        description="The air-quality overlay for this forecast is unavailable right now."
+      />
+    );
+  }
+  const summary = `Forecast daily AQI: ${withAqi.map((d) => `${d.day} ${d.aqi}`).join(", ")}.`;
   return chartFrame(
     "7-day AQI outlook",
     summary,
     220,
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+      <BarChart data={withAqi} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
         <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#64748b" }} />
         <YAxis tick={{ fontSize: 11, fill: "#64748b" }} width={44} />

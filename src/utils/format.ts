@@ -41,6 +41,14 @@ export function formatTimestamp(iso: string): string {
   });
 }
 
+/** Short clock time (e.g. "14:30") from an ISO timestamp — for provider observation times. */
+export function formatTime(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+}
+
 export function formatPercent(fraction: number): string {
   return `${Math.round(fraction * 100)}%`;
 }

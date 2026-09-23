@@ -54,8 +54,10 @@ keys**. Requirements:
   (e.g. one location with moderate air quality, one with a simulated heat + AQI combined risk),
   and no dead ends.
 - Whether an agent is in live or demo mode should be controllable via environment/config (e.g.
-  missing provider key → automatic demo fallback for that provider specifically, plus a global
-  `DEMO_MODE` flag to force it everywhere for the pitch).
+  a global `DEMO_MODE` flag / in-app toggle to force fixtures everywhere for the pitch, plus
+  `DATA_PROVIDER` to choose the default provider). Individual providers never silently fall
+  back to demo on failure — a failed live call surfaces as UNAVAILABLE unless Demo Mode is
+  explicitly turned on.
 
 ## Provider integration guidance, by domain
 
@@ -68,9 +70,17 @@ provider-agnostic so a provider can be swapped without touching agent logic.
   key is configured (e.g. a public AQI/air-quality data provider). Historical trend requires a
   provider that supports time-series queries — degrade to "trend unavailable" rather than
   faking a trend line.
-- **Weather (temperature, humidity, wind, precipitation, forecast):** integrate a real weather
-  API when configured. This feeds Heat, Flood, and Wildfire agents — treat it as shared
-  infrastructure, not a per-agent client.
+- **Weather (temperature, humidity, wind, precipitation, forecast):** integrated with OpenWeather
+  (`OPENWEATHER_API_KEY`, server-side only) when `DATA_PROVIDER=live`. This feeds Heat, Flood,
+  and Wildfire agents — treat it as shared infrastructure, not a per-agent client. Like air
+  quality, live providers **do not silently fall back to demo data on failure** — the UI shows
+  an explicit UNAVAILABLE state instead; Demo Mode must be turned on explicitly to get
+  fixtures. UV index is not available from the OpenWeather endpoints in use and is never
+  estimated.
+- **City search / geocoding:** OpenWeather Geocoding (`/geo/1.0/direct`, same server-side key)
+  powers the searchable city input — type any city, pick a match, and the returned lat/lon drive
+  every OpenWeather request for that location. Without a key (or if geocoding fails), search
+  degrades to the built-in seed city list with a visible notice; it never hard-fails the picker.
 - **Flood (rainfall, river/water level, terrain):** river/water-level and terrain data may not
   be available for many locations — this is expected. When unavailable, base the flood risk
   purely on rainfall/forecast and say explicitly in `limitations` that water-level/terrain data
@@ -94,8 +104,10 @@ integration status. Keep the actual current status accurate here as providers ge
 
 | Domain | Status | Notes |
 |---|---|---|
-| Air quality | **Live-capable** (default: Demo) | Open-Meteo Air Quality (`us_aqi`, keyless) when `DATA_PROVIDER=live`; falls back to demo fixtures per-domain on failure. Default config serves Demo. |
-| Weather | **Live-capable** (default: Demo) | Open-Meteo Forecast (keyless) — shared substrate for Heat/Flood/Wildfire/Water. Default: Demo. |
+| Air quality | **Live-capable** (default: Demo) | Open-Meteo Air Quality (`us_aqi`, keyless) when `DATA_PROVIDER=live`; **no demo fallback in live mode** — failures surface as UNAVAILABLE. Default config serves Demo. |
+| Weather (current) | **Live-capable** (default: Demo) | OpenWeather Current Weather (`OPENWEATHER_API_KEY`, server-side only) when `DATA_PROVIDER=live`. **No demo fallback in live mode** — failures surface as UNAVAILABLE with a visible error. Verified with a real request before the Data Sources page shows "Connected". Default: Demo. |
+| 7-day forecast | **Live-capable** (default: Demo) | OpenWeather 5-Day/3-Hour forecast for weather fields (temp range, humidity, rainfall, wind, precip probability); daily AQI overlay from Open-Meteo. Same no-fallback-in-live rule as current weather. Default: Demo. |
+| City search / geocoding | **Live-capable** (default: Demo) | OpenWeather Geocoding when `OPENWEATHER_API_KEY` is set — returns lat/lon for any searched city, which then drive OpenWeather weather/forecast. Falls back to the built-in seed list with a disclosed notice when unconfigured or failing. |
 | Flood | **Derived** (rainfall/forecast only) | No river/water-level or terrain feed — screening capped at `high`, limitation always disclosed. Inputs follow the weather row's live/demo state. |
 | Wildfire | **Derived** (weather proxies) | No vegetation or historical fire-incident feed — temperature/humidity/wind/rainfall proxy only, disclosed in `limitations`. |
 | Water stress | **Derived** (rainfall history + forecast) | 14-day rainfall history uses demo fixtures whenever demo is preferred (incl. default `DATA_PROVIDER=demo`); `unavailable` only when live is preferred (no live history source configured). No reservoir/drought feed. |
@@ -115,5 +127,6 @@ integration status. Keep the actual current status accurate here as providers ge
 
 - All provider keys live in `.env` (never committed); `.env.example` documents the required
   variable names with placeholder/empty values only — never a real-looking fake key.
-- A missing key for a given provider should cause that specific domain to fall back to demo
-  data, not crash the app or silently disable the whole feature area.
+- A missing key for a given provider should cause that specific domain to surface as UNAVAILABLE
+  (or serve demo fixtures only when Demo Mode / `DATA_PROVIDER=demo` is active), not crash the
+  app or silently disable the whole feature area.

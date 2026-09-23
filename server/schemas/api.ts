@@ -1,19 +1,23 @@
 import { z } from "zod";
-import { LOCATIONS } from "../../shared/locations";
+import { isValidLocationId } from "../../shared/locations";
+
+/** Known seed ids and self-contained searched-city ids (see shared/locations.ts). */
+const locationIdField = z
+  .string()
+  .optional()
+  .refine((id) => isValidLocationId(id), "unknown locationId");
 
 export const locationQuerySchema = z.object({
-  locationId: z
-    .string()
-    .optional()
-    .refine((id) => !id || LOCATIONS.some((l) => l.id === id), "unknown locationId"),
+  locationId: locationIdField,
+});
+
+export const locationSearchSchema = z.object({
+  q: z.string().trim().min(2, "query too short").max(100, "query too long"),
 });
 
 export const assistantAskSchema = z.object({
   message: z.string().trim().min(1, "message required").max(1000, "message too long"),
-  locationId: z
-    .string()
-    .optional()
-    .refine((id) => !id || LOCATIONS.some((l) => l.id === id), "unknown locationId"),
+  locationId: locationIdField,
 });
 
 export const wasteClassifySchema = z
@@ -27,18 +31,12 @@ export const wasteClassifySchema = z
   });
 
 export const routeCompareSchema = z.object({
-  locationId: z
-    .string()
-    .optional()
-    .refine((id) => !id || LOCATIONS.some((l) => l.id === id), "unknown locationId"),
+  locationId: locationIdField,
   routeIds: z.array(z.string().max(50)).min(2).max(5).optional(),
 });
 
 export const reportCreateSchema = z.object({
-  locationId: z
-    .string()
-    .optional()
-    .refine((id) => !id || LOCATIONS.some((l) => l.id === id), "unknown locationId"),
+  locationId: locationIdField,
   title: z.string().trim().max(200).optional(),
   include: z.array(z.string().max(50)).max(20).optional(),
 });

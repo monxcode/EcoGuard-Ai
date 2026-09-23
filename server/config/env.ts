@@ -11,7 +11,9 @@ export const config = {
   preferredProvider: (process.env.DATA_PROVIDER ?? "demo") === "live" ? "live" : "demo",
   geminiApiKey: process.env.GEMINI_API_KEY?.trim() || undefined,
   geminiModel: process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash",
+  openWeatherApiKey: process.env.OPENWEATHER_API_KEY?.trim() || undefined,
   version: "0.1.0",
 };
 
 export const geminiConfigured = Boolean(config.geminiApiKey);
+export const openWeatherConfigured = Boolean(config.openWeatherApiKey);

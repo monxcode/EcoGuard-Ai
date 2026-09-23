@@ -1,7 +1,8 @@
 import { aqiCategory } from "../../../shared/aqi";
 import type { DashboardPayload } from "../../../shared/types";
 import { useApp } from "../../context/AppContext";
-import { formatTempFull, formatTimestamp, formatWind } from "../../utils/format";
+import { formatTempFull, formatTimestamp, formatTime, formatWind } from "../../utils/format";
+import { weatherIcon } from "../../utils/weatherIcon";
 import { PageHeader } from "../ui/PageHeader";
 import { Card, CardBody, CardHeader } from "../ui/Card";
 import { DataStateBadge } from "../ui/DataStateBadge";
@@ -15,6 +16,7 @@ export function DashboardView({ data }: { data: DashboardPayload }) {
   const weather = data.weather;
   const category = air ? aqiCategory(air.aqi) : null;
   const runsById = Object.fromEntries(data.agentRuns.map((r) => [r.agentId, r]));
+  const WeatherGlyph = weatherIcon(weather?.icon, weather?.weatherCondition);
 
   const domains = [
     { id: "air-quality", label: "Air Quality" },
@@ -33,6 +35,20 @@ export function DashboardView({ data }: { data: DashboardPayload }) {
           data.overall ? <RiskPill level={data.overall.result.riskLevel} size="lg" /> : null
         }
       />
+
+      {/* Provider errors — never hidden behind a blank card */}
+      {data.errors.length > 0 ? (
+        <Card className="p-4 border-amber-200 bg-amber-50">
+          <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+            Data availability
+          </p>
+          <ul className="mt-2 text-sm text-amber-900 list-disc pl-5 space-y-1">
+            {data.errors.map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
 
       {/* Row 1: hero metrics */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -63,18 +79,40 @@ export function DashboardView({ data }: { data: DashboardPayload }) {
           </div>
           {weather ? (
             <>
-              <p className="mt-2 text-4xl font-semibold text-slate-900 tabular-nums leading-none">
-                {formatTempFull(weather.temperature, settings.units)}
-              </p>
+              <div className="mt-2 flex items-start gap-3">
+                <WeatherGlyph className="w-8 h-8 text-sky-600 shrink-0 mt-1" aria-hidden />
+                <div>
+                  <p className="text-4xl font-semibold text-slate-900 tabular-nums leading-none">
+                    {formatTempFull(weather.temperature, settings.units)}
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-slate-700 capitalize">
+                    {weather.weatherDescription ?? weather.weatherCondition ?? "Current conditions"}
+                  </p>
+                </div>
+              </div>
               <p className="mt-2 text-sm text-slate-600">
-                Feels like {formatTempFull(weather.apparentTemperature, settings.units)}
+                Feels like{" "}
+                {weather.apparentTemperature !== null
+                  ? formatTempFull(weather.apparentTemperature, settings.units)
+                  : "—"}
               </p>
               <p className="mt-1 text-xs text-slate-500">
                 Humidity {weather.humidity}% · Wind {formatWind(weather.windSpeed, settings.units)}
+                {weather.pressure !== null ? ` · ${weather.pressure} hPa` : ""}
+                {weather.cloudiness !== null ? ` · ${weather.cloudiness}% cloud` : ""}
+              </p>
+              <p className="mt-1 text-[11px] text-slate-400">
+                {data.sources.weather} · observed {formatTime(weather.timestamp)}
               </p>
             </>
           ) : (
-            <p className="mt-3 text-sm text-slate-500">Data unavailable</p>
+            <div className="mt-3">
+              <p className="text-sm font-semibold text-rose-700">WEATHER DATA UNAVAILABLE</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Weather data is temporarily unavailable. Try again shortly or switch to Demo Mode
+                in Settings.
+              </p>
+            </div>
           )}
         </Card>
 
@@ -179,7 +217,7 @@ export function DashboardView({ data }: { data: DashboardPayload }) {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader
-            title="Temperature outlook (7 days)"
+            title="Weather Forecast — temperature (7 days)"
             action={<DataStateBadge state={data.states.forecast} />}
           />
           <CardBody className="pt-2">
@@ -188,7 +226,7 @@ export function DashboardView({ data }: { data: DashboardPayload }) {
         </Card>
         <Card>
           <CardHeader
-            title="Rainfall outlook (7 days)"
+            title="Weather Forecast — rainfall (7 days)"
             action={<DataStateBadge state={data.states.forecast} />}
           />
           <CardBody className="pt-2">

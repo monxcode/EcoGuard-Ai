@@ -23,9 +23,16 @@ interface LocationProfile {
   windSpeed: number;
   windDirection: number;
   precipitation: number;
+  pressure: number;
+  cloudiness: number;
+  visibility: number;
+  weatherCondition: string;
+  weatherDescription: string;
+  weatherIcon: string;
   tmax: number[];
   tmin: number[];
   rain: number[];
+  pop: number[];
   aqiDays: number[];
   humidityDays: number[];
   windDays: number[];
@@ -48,9 +55,16 @@ const PROFILES: Record<string, LocationProfile> = {
     windSpeed: 14,
     windDirection: 245,
     precipitation: 0,
+    pressure: 1008,
+    cloudiness: 15,
+    visibility: 8000,
+    weatherCondition: "Clear",
+    weatherDescription: "clear sky",
+    weatherIcon: "01d",
     tmax: [36, 37, 38, 37, 34, 33, 34],
     tmin: [24, 25, 25, 26, 24, 23, 23],
     rain: [0, 0, 0, 2, 18, 6, 1],
+    pop: [0.05, 0.05, 0.1, 0.4, 0.7, 0.5, 0.25],
     aqiDays: [128, 135, 142, 148, 130, 118, 122],
     humidityDays: [38, 36, 35, 44, 62, 58, 50],
     windDays: [14, 15, 13, 18, 22, 16, 14],
@@ -69,9 +83,16 @@ const PROFILES: Record<string, LocationProfile> = {
     windSpeed: 11,
     windDirection: 260,
     precipitation: 0,
+    pressure: 1006,
+    cloudiness: 10,
+    visibility: 6000,
+    weatherCondition: "Clear",
+    weatherDescription: "clear sky",
+    weatherIcon: "01d",
     tmax: [39, 40, 40, 38, 36, 35, 36],
     tmin: [26, 27, 27, 26, 25, 24, 25],
     rain: [0, 0, 0, 4, 12, 3, 0],
+    pop: [0.05, 0.05, 0.1, 0.45, 0.65, 0.4, 0.1],
     aqiDays: [152, 160, 168, 174, 150, 138, 144],
     humidityDays: [30, 28, 28, 36, 52, 48, 42],
     windDays: [11, 12, 10, 16, 20, 14, 12],
@@ -90,9 +111,16 @@ const PROFILES: Record<string, LocationProfile> = {
     windSpeed: 9,
     windDirection: 290,
     precipitation: 0,
+    pressure: 1004,
+    cloudiness: 45,
+    visibility: 4000,
+    weatherCondition: "Haze",
+    weatherDescription: "haze",
+    weatherIcon: "50d",
     tmax: [33, 34, 34, 32, 31, 32, 33],
     tmin: [25, 26, 26, 25, 24, 25, 25],
     rain: [0, 0, 6, 14, 2, 0, 0],
+    pop: [0.05, 0.1, 0.5, 0.7, 0.3, 0.1, 0.05],
     aqiDays: [170, 178, 186, 175, 158, 164, 172],
     humidityDays: [55, 56, 58, 66, 70, 62, 58],
     windDays: [9, 8, 10, 14, 12, 9, 8],
@@ -111,9 +139,16 @@ const PROFILES: Record<string, LocationProfile> = {
     windSpeed: 26,
     windDirection: 250,
     precipitation: 12,
+    pressure: 1010,
+    cloudiness: 85,
+    visibility: 5000,
+    weatherCondition: "Rain",
+    weatherDescription: "moderate rain",
+    weatherIcon: "10d",
     tmax: [31, 30, 29, 30, 31, 31, 30],
     tmin: [26, 26, 25, 26, 26, 26, 25],
     rain: [46, 58, 22, 6, 2, 8, 30],
+    pop: [0.85, 0.9, 0.7, 0.5, 0.35, 0.55, 0.75],
     aqiDays: [88, 80, 72, 64, 58, 66, 74],
     humidityDays: [78, 82, 80, 76, 74, 78, 82],
     windDays: [26, 30, 24, 20, 18, 22, 28],
@@ -176,7 +211,21 @@ export function buildDemoWeather(locationId: string): WeatherReading {
     windSpeed: p.windSpeed,
     windDirection: p.windDirection,
     precipitation: p.precipitation,
+    pressure: p.pressure,
+    cloudiness: p.cloudiness,
+    visibility: p.visibility,
+    weatherCondition: p.weatherCondition,
+    weatherDescription: p.weatherDescription,
+    icon: p.weatherIcon,
+    timestamp: demoWeatherTimestamp(),
   };
+}
+
+/** Deterministic demo observation anchor: today at 12:00 UTC (stable within a day). */
+function demoWeatherTimestamp(): string {
+  const now = new Date();
+  const anchor = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12, 0, 0);
+  return new Date(anchor).toISOString();
 }
 
 /** Last 24 hours, ending at 16:00 local (fixed demo anchor). Deterministic. */
@@ -228,6 +277,7 @@ export function buildDemoDaily(locationId: string): DailyPoint[] {
     precipitationMm: p.rain[i],
     aqi: p.aqiDays[i],
     windSpeed: p.windDays[i],
+    precipProbability: p.pop[i],
   }));
 }
 

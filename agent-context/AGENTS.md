@@ -46,7 +46,10 @@ cause.
 ### 4. Weather Agent
 **Responsibility:** Current weather + forecast (temperature, humidity, wind, precipitation) —
 the shared weather substrate other agents (Heat, Flood, Wildfire, Water) depend on.
+**Inputs:** live OpenWeather (current + 5-day) or demo fixtures per DATA-SOURCES.md; no demo
+fallback in live mode (unavailable states are disclosed, not hidden).
 **Output notes:** Primarily factual/observational; low interpretive content of its own.
+Limitations must name anything not provided by the provider (e.g. UV index).
 
 ### 5. Heat Risk Agent ("HeatShield")
 **Responsibility:** Heat index/apparent temperature, heatwave detection, trend, vulnerable time

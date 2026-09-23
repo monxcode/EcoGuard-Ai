@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Bell, FlaskConical, MapPin, Ruler, TestTube } from "lucide-react";
-import { LOCATIONS } from "../../shared/locations";
 import { useApp, type AlertSeverity, type Units } from "../context/AppContext";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "../components/ui/Card";
 import { DataStateBadge } from "../components/ui/DataStateBadge";
 import { InlineError } from "../components/ui/states";
+import { LocationSearch } from "../components/ui/LocationSearch";
 
 function Toggle({
   checked,
@@ -93,20 +93,13 @@ export default function SettingsPage() {
             icon={<MapPin className="w-4 h-4 text-slate-400" aria-hidden />}
           />
           <CardBody className="pt-2">
-            <select
-              value={settings.locationId}
-              onChange={(e) => updateSettings({ locationId: e.target.value })}
-              className="w-full h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white"
-              aria-label="Default location"
-            >
-              {LOCATIONS.map((loc) => (
-                <option key={loc.id} value={loc.id}>
-                  {loc.name}, {loc.region}
-                </option>
-              ))}
-            </select>
+            <LocationSearch
+              variant="block"
+              label="Default location"
+              id="settings-location"
+            />
             <p className="mt-2 text-xs text-slate-500">
-              Used as the starting location the next time you open the app.
+              Used as the starting location the next time you open the app. Search any city — results come from OpenWeather Geocoding.
             </p>
           </CardBody>
         </Card>

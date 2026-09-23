@@ -41,6 +41,16 @@ function localInterpretation(ctx: AgentContext): string[] {
         "Higher humidity was observed alongside the pollution levels — humid, stagnant conditions are often associated with slower particulate clearance.",
       );
     }
+    if (weather.cloudiness !== null && weather.cloudiness >= 80) {
+      out.push(
+        `Heavy cloud cover (${weather.cloudiness}%) was observed alongside the readings — overcast, low-mixing conditions are a possible contributor.`,
+      );
+    }
+    if (weather.precipitation > 0) {
+      out.push(
+        `Precipitation (${weather.precipitation} mm in the last hour) was observed — washout is a possible influence on particulate levels.`,
+      );
+    }
     if (weather.humidity <= 35 && rainfallHistory.days14.length > 0) {
       const past14 = sum(rainfallHistory.days14);
       if (past14 < 5) {
@@ -75,7 +85,13 @@ export const pollutionAnalysisAgent: DomainAgentDef = {
     const observed = [
       `24-hour AQI moved from ${ctx.data.hourly[0].aqi} to ${ctx.data.hourly[ctx.data.hourly.length - 1].aqi}.`,
       ctx.data.weather
-        ? `Wind ${ctx.data.weather.windSpeed} km/h, humidity ${ctx.data.weather.humidity}%, temperature ${ctx.data.weather.temperature} °C during this window.`
+        ? `Wind ${ctx.data.weather.windSpeed} km/h${
+            ctx.data.weather.windDirection !== null
+              ? ` from ${Math.round(ctx.data.weather.windDirection)}°`
+              : ""
+          }, humidity ${ctx.data.weather.humidity}%, temperature ${ctx.data.weather.temperature} °C${
+            ctx.data.weather.cloudiness !== null ? `, cloud cover ${ctx.data.weather.cloudiness}%` : ""
+          }, precipitation ${ctx.data.weather.precipitation} mm during this window.`
         : "Weather data unavailable for this window.",
       `14-day rainfall total: ${
         ctx.data.rainfallHistory.days14.length > 0
@@ -95,7 +111,15 @@ export const pollutionAnalysisAgent: DomainAgentDef = {
         `Observed data: ${observed.join(" | ")}`,
         `Hourly AQI series: ${ctx.data.hourly.map((h) => h.aqi).join(",")}`,
         ctx.data.weather
-          ? `Weather: temp ${ctx.data.weather.temperature}C, humidity ${ctx.data.weather.humidity}%, wind ${ctx.data.weather.windSpeed} km/h, precipitation ${ctx.data.weather.precipitation} mm`
+          ? `Weather: temp ${ctx.data.weather.temperature}C, humidity ${ctx.data.weather.humidity}%, wind ${ctx.data.weather.windSpeed} km/h${
+              ctx.data.weather.windDirection !== null
+                ? ` (direction ${Math.round(ctx.data.weather.windDirection)}°)`
+                : ""
+            }, precipitation ${ctx.data.weather.precipitation} mm${
+              ctx.data.weather.cloudiness !== null
+                ? `, cloudiness ${ctx.data.weather.cloudiness}%`
+                : ""
+            }`
           : "Weather: unavailable",
         "",
         'Return JSON: {"interpretation": ["...", ...]} with 2-4 hedged statements.',

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../services/api";
+import { useApp } from "../context/AppContext";
 
 export interface ApiState<T> {
   data: T | null;
@@ -8,8 +9,10 @@ export interface ApiState<T> {
   reload: () => void;
 }
 
-/** Generic GET data hook with loading/error/retry states. */
+/** Generic GET data hook with loading/error/retry states. Refetches when Demo Mode toggles. */
 export function useApi<T>(path: string | null): ApiState<T> {
+  const { settings } = useApp();
+  const { demoMode } = settings;
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(Boolean(path));
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +63,7 @@ export function useApi<T>(path: string | null): ApiState<T> {
     return () => {
       cancelled = true;
     };
-  }, [path, nonce]);
+  }, [path, nonce, demoMode]);
 
   const reload = useCallback(() => setNonce((n) => n + 1), []);
   void mounted;

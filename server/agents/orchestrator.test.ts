@@ -35,6 +35,12 @@ describe("orchestrator intent routing", () => {
     expect(routeForIntent(intent)).toEqual(["weather", "heat-risk"]);
   });
 
+  it("routes a weather question to the weather agent, not city-risk", () => {
+    expect(classifyIntent("What is the weather today?")).toBe("weather");
+    expect(classifyIntent("Will it rain tomorrow?")).toBe("weather");
+    expect(routeForIntent("weather")).toEqual(["weather", "heat-risk"]);
+  });
+
   it("falls back to general with a small agent subset", () => {
     const intent = classifyIntent("hello");
     expect(intent).toBe("general");

@@ -63,11 +63,19 @@ export interface AirReading {
 
 export interface WeatherReading {
   temperature: number;
-  apparentTemperature: number;
+  apparentTemperature: number | null;
   humidity: number;
   windSpeed: number;
-  windDirection: number;
+  windDirection: number | null;
   precipitation: number;
+  pressure: number | null;
+  cloudiness: number | null;
+  visibility: number | null;
+  weatherCondition: string | null;
+  weatherDescription: string | null;
+  icon: string | null;
+  /** Provider observation time (ISO). Demo fixtures use a deterministic anchor. */
+  timestamp: string;
 }
 
 export interface HourlyPoint {
@@ -75,8 +83,8 @@ export interface HourlyPoint {
   aqi: number;
   pm25: number;
   pm10: number;
-  temperature: number;
-  humidity: number;
+  temperature: number | null;
+  humidity: number | null;
 }
 
 export interface DailyPoint {
@@ -85,8 +93,10 @@ export interface DailyPoint {
   tempMin: number;
   humidity: number;
   precipitationMm: number;
-  aqi: number;
+  aqi: number | null;
   windSpeed: number;
+  /** Precipitation probability 0–1 for the day, when the provider supplies it. */
+  precipProbability: number | null;
 }
 
 /** Raw environmental inputs fetched from a provider (live or demo). */
@@ -315,6 +325,13 @@ export interface DataSourcesPayload {
   preferredProvider: string;
   geminiConfigured: boolean;
   providers: ProviderStatus[];
+}
+
+export interface LocationSearchPayload {
+  results: AppLocation[];
+  state: DataState;
+  source: string;
+  error?: string;
 }
 
 export interface DemoStep {

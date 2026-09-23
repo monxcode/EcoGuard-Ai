@@ -29,7 +29,7 @@ export default function DataSourcesPage() {
           <p className="mt-2 text-xs text-slate-500">
             {data.globalDemoMode
               ? "Forced demo mode is ON — every provider serves fixtures."
-              : `Preferred provider: ${data.preferredProvider}. Missing/failed providers fall back to demo per-domain.`}
+              : `Preferred provider: ${data.preferredProvider}. Failed live calls surface as unavailable — demo data appears only when Demo Mode is explicitly on.`}
           </p>
         </Card>
         <Card className="p-4">
@@ -92,8 +92,9 @@ export default function DataSourcesPage() {
           To move a domain to live data, configure the matching server-side environment variables
           (see <code className="text-xs bg-slate-100 px-1 rounded">.env.example</code>) and set{" "}
           <code className="text-xs bg-slate-100 px-1 rounded">DATA_PROVIDER=live</code>. If a live
-          call fails, that domain automatically falls back to clearly-labeled demo data instead of
-          crashing or hiding the card.
+          call fails, that domain shows <strong>Unavailable</strong> instead of silently switching
+          to demo data — turn Demo Mode on explicitly (Settings or Demo page) when you want
+          fixtures.
         </p>
       </Card>
     </div>

@@ -5,11 +5,15 @@ import { heatIndexCelsius } from "../../shared/aqi";
  * the heat index from measured temperature + humidity.
  */
 export function heatHiFromIndex(
-  apparentTemperature: number,
+  apparentTemperature: number | null,
   temperature: number,
   humidity: number,
 ): number {
-  if (Number.isFinite(apparentTemperature) && apparentTemperature > 0) {
+  if (
+    apparentTemperature !== null &&
+    Number.isFinite(apparentTemperature) &&
+    apparentTemperature > 0
+  ) {
     return apparentTemperature;
   }
   return heatIndexCelsius(temperature, humidity);

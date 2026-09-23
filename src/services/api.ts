@@ -10,6 +10,7 @@ import type {
   EnvironmentalReport,
   HealthPayload,
   AppLocation,
+  LocationSearchPayload,
   PollutionAnalysisPayload,
   RouteComparisonPayload,
   RouteOption,
@@ -60,6 +61,8 @@ function qs(params: Record<string, string | undefined>): string {
 export const api = {
   getHealth: () => request<HealthPayload>("/api/health"),
   getLocations: () => request<AppLocation[]>("/api/locations"),
+  searchLocations: (q: string) =>
+    request<LocationSearchPayload>(`/api/locations/search${qs({ q })}`),
   getDataSources: () => request<DataSourcesPayload>("/api/data-sources"),
   getDashboard: (locationId: string) =>
     request<DashboardPayload>(`/api/dashboard${qs({ locationId })}`),

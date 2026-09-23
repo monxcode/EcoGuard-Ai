@@ -43,7 +43,7 @@ export const heatRiskAgent: DomainAgentDef = {
     const minTempTonight = ctx.data.daily.length > 0 ? ctx.data.daily[0].tempMin : null;
 
     const factors = [
-      `Heat index ${hi} °C from ${wx.temperature} °C and ${wx.humidity}% humidity — thermal stress level: ${riskLevel}.`,
+      `Heat index ${hi} °C from ${wx.temperature} °C and ${wx.humidity}% humidity — EcoGuard's thermal-stress assessment level: ${riskLevel}.`,
     ];
     if (hotDays >= 2) {
       factors.push(
@@ -82,15 +82,18 @@ export const heatRiskAgent: DomainAgentDef = {
       status: "success",
       riskLevel,
       confidence: ctx.data.states.weather === "live" ? 0.88 : 0.85,
-      summary: `Heat index is ${hi} °C — ${riskLevel} heat risk. ${
+      summary: `Heat index is ${hi} °C — ${riskLevel} heat risk (EcoGuard assessment, not an official warning). ${
         hotDays >= 2
           ? `${hotDays}-day hot spell in the forecast.`
           : "No extended hot spell detected."
       }`,
       factors,
       evidence: [
-        `Temperature ${wx.temperature} °C, humidity ${wx.humidity}%, apparent temperature ${wx.apparentTemperature} °C.`,
-        `Heat index (Rothfusz approximation): ${hi} °C.`,
+        `Provider measurements: temperature ${wx.temperature} °C, humidity ${wx.humidity}%.`,
+        wx.apparentTemperature !== null
+          ? `Provider apparent temperature ${wx.apparentTemperature} °C.`
+          : "Provider apparent temperature unavailable — heat index computed from temperature + humidity.",
+        `Heat index (Rothfusz approximation): ${hi} °C — EcoGuard's derived assessment, not a government index.`,
         ctx.data.daily.length > 0
           ? `Forecast highs: ${ctx.data.daily.map((d) => `${d.day} ${d.tempMax}°`).join(", ")}.`
           : "Forecast unavailable.",
@@ -100,7 +103,7 @@ export const heatRiskAgent: DomainAgentDef = {
       limitations: [
         `Hot-spell detection uses a ${HOT_SPELL_THRESHOLD_C} °C screening threshold, not official meteorological heatwave criteria.`,
         "Heat index is an approximation; urban heat-island effects can make built-up areas hotter.",
-        "Not an official health warning — follow guidance from local authorities.",
+        "This is EcoGuard's screening assessment — not an official health or government warning; follow guidance from local authorities.",
       ],
     };
   },

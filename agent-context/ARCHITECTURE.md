@@ -70,10 +70,12 @@ src/               # React client (Vite)
 
 server/            # Express API (bundled to dist/server.js via esbuild)
 ├── index.ts       # app wiring; serves dist/ SPA in production
-├── config/        # env.ts (PORT, DATA_PROVIDER, DEMO_MODE, GEMINI_*)
+├── config/        # env.ts (PORT, DATA_PROVIDER, DEMO_MODE, GEMINI_*, OPENWEATHER_API_KEY)
 ├── agents/        # orchestrator + 12 agent modules + vitest suites
-├── tools/         # providers.ts (demo + Open-Meteo live + cache/fallback),
-│                  #   demoFixtures, demoState, gemini, wasteClassifier, noise
+├── tools/         # providers.ts (cache/fallback; demo + Open-Meteo air live),
+│                  #   openweather.ts (OpenWeather current + 5-day forecast + geocoding
+│                  #   client, Zod response validation, normalization, connection
+│                  #   verification), demoFixtures, demoState, gemini, wasteClassifier, noise
 ├── routes/        # meta, dashboard, intelligence, assistant, waste, greenRoutes, reports
 ├── services/      # alerts, demoScenario
 ├── middleware/    # errorHandler (ApiError, Zod, asyncRoute)

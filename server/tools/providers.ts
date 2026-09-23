@@ -16,6 +16,12 @@ import {
   buildDemoRainfallPast14,
   buildDemoWeather,
 } from "./demoFixtures";
+import {
+  forecastDraftToDaily,
+  loadOpenWeatherCurrent,
+  loadOpenWeatherForecast,
+  OPENWEATHER_FORECAST_SOURCE,
+} from "./openweather";
 
 export interface ToolResponse<T> {
   data: T | null;
@@ -27,9 +33,7 @@ export interface ToolResponse<T> {
 export interface EnvironmentalDataProvider {
   readonly id: string;
   getAirQuality(location: AppLocation): Promise<ToolResponse<AirReading>>;
-  getWeather(location: AppLocation): Promise<ToolResponse<WeatherReading>>;
   getHourly(location: AppLocation): Promise<ToolResponse<HourlyPoint[]>>;
-  getDaily(location: AppLocation): Promise<ToolResponse<DailyPoint[]>>;
 }
 
 const DEMO_AIR_SOURCE = "Demo Data — Air Quality Fixture Set";
@@ -44,24 +48,16 @@ export class DemoEnvironmentalDataProvider implements EnvironmentalDataProvider 
     return { data: buildDemoAir(location.id), state: "demo", source: DEMO_AIR_SOURCE };
   }
 
-  async getWeather(location: AppLocation): Promise<ToolResponse<WeatherReading>> {
-    return { data: buildDemoWeather(location.id), state: "demo", source: DEMO_WEATHER_SOURCE };
-  }
-
   async getHourly(location: AppLocation): Promise<ToolResponse<HourlyPoint[]>> {
     return { data: buildDemoHourly(location.id), state: "demo", source: DEMO_TREND_SOURCE };
-  }
-
-  async getDaily(location: AppLocation): Promise<ToolResponse<DailyPoint[]>> {
-    return { data: buildDemoDaily(location.id), state: "demo", source: DEMO_FORECAST_SOURCE };
   }
 }
 
 /**
- * Live provider using Open-Meteo (documented, keyless public APIs):
- * - https://open-meteo.com/en/docs/forecast-api
+ * Live air-quality provider using Open-Meteo's keyless Air Quality API:
  * - https://open-meteo.com/en/docs/air-quality-api
- * Any failure is surfaced as `error` and the caller falls back to demo fixtures.
+ * Weather (current + forecast) is provided by OpenWeather — see openweather.ts.
+ * Failures surface as unavailable; demo fixtures only when Demo Mode is on.
  */
 export class LiveOpenMeteoProvider implements EnvironmentalDataProvider {
   readonly id = "open-meteo";
@@ -98,102 +94,32 @@ export class LiveOpenMeteoProvider implements EnvironmentalDataProvider {
     }
   }
 
-  async getWeather(location: AppLocation): Promise<ToolResponse<WeatherReading>> {
-    try {
-      const url =
-        `https://api.open-meteo.com/v1/forecast` +
-        `?latitude=${location.lat}&longitude=${location.lon}` +
-        `&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,wind_speed_10m,wind_direction_10m` +
-        `&timezone=auto`;
-      const json = (await fetchJson(url)) as { current?: Record<string, number | null> };
-      const cur = json.current ?? {};
-      const temperature = num(cur.temperature_2m);
-      if (temperature === null) throw new Error("missing temperature_2m");
-      const humidity = num(cur.relative_humidity_2m) ?? 50;
-      return {
-        data: {
-          temperature: round1(temperature),
-          apparentTemperature: round1(num(cur.apparent_temperature) ?? temperature),
-          humidity: Math.round(humidity),
-          windSpeed: round1(num(cur.wind_speed_10m) ?? 0),
-          windDirection: Math.round(num(cur.wind_direction_10m) ?? 0),
-          precipitation: round1(num(cur.precipitation) ?? 0),
-        },
-        state: "live",
-        source: "Open-Meteo Forecast (Live)",
-      };
-    } catch (err) {
-      return failed("Open-Meteo Forecast (Live)", err);
-    }
-  }
-
+  /** Hourly AQI/PM trend from Open-Meteo air quality only (no weather merge in live mode). */
   async getHourly(location: AppLocation): Promise<ToolResponse<HourlyPoint[]>> {
     try {
       const airUrl =
         `https://air-quality-api.open-meteo.com/v1/air-quality` +
         `?latitude=${location.lat}&longitude=${location.lon}` +
         `&hourly=us_aqi,pm2_5,pm10&past_days=1&forecast_days=1&timezone=auto`;
-      const wxUrl =
-        `https://api.open-meteo.com/v1/forecast` +
-        `?latitude=${location.lat}&longitude=${location.lon}` +
-        `&hourly=temperature_2m,relative_humidity_2m&past_days=1&forecast_days=1&timezone=auto`;
-      const [airJson, wxJson] = (await Promise.all([fetchJson(airUrl), fetchJson(wxUrl)])) as [
-        HourlyAirJson,
-        HourlyWxJson,
-      ];
-      const air = normalizeHourlyAir(airJson);
-      const wx = normalizeHourlyWx(wxJson);
-      const merged: HourlyPoint[] = air.map((point) => {
-        const match = wx.get(point.hour);
-        return {
-          ...point,
-          temperature: match?.temperature ?? point.temperature,
-          humidity: match?.humidity ?? point.humidity,
-        };
-      });
-      const window = merged.slice(-24);
+      const airJson = (await fetchJson(airUrl)) as HourlyAirJson;
+      const points = normalizeHourlyAir(airJson);
+      const window = points.slice(-24);
       if (window.length === 0) throw new Error("no hourly data");
       return { data: window, state: "live", source: "Open-Meteo Air Quality hourly (Live)" };
     } catch (err) {
       return failed("Open-Meteo Air Quality hourly (Live)", err);
     }
   }
+}
 
-  async getDaily(location: AppLocation): Promise<ToolResponse<DailyPoint[]>> {
-    try {
-      const wxUrl =
-        `https://api.open-meteo.com/v1/forecast` +
-        `?latitude=${location.lat}&longitude=${location.lon}` +
-        `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum` +
-        `&hourly=wind_speed_10m,relative_humidity_2m&forecast_days=7&timezone=auto`;
-      const airUrl =
-        `https://air-quality-api.open-meteo.com/v1/air-quality` +
-        `?latitude=${location.lat}&longitude=${location.lon}` +
-        `&hourly=us_aqi,pm2_5&forecast_days=7&timezone=auto`;
-      const [wxJson, airJson] = (await Promise.all([fetchJson(wxUrl), fetchJson(airUrl)])) as [
-        DailyWxJson,
-        HourlyAirJson,
-      ];
-      const daily = wxJson.daily;
-      if (!daily?.time?.length) throw new Error("no daily data");
-      const aqiByDay = dayAverageAqi(airJson);
-      const humByDay = dayAverageField(wxJson.hourly, "relative_humidity_2m");
-      const windByDay = dayMaxField(wxJson.hourly, "wind_speed_10m");
-      const points: DailyPoint[] = daily.time.map((day, i) => ({
-        day: dayLabel(i),
-        tempMax: round1(daily.temperature_2m_max?.[i] ?? 0),
-        tempMin: round1(daily.temperature_2m_min?.[i] ?? 0),
-        humidity: Math.round(humByDay.get(day) ?? 50),
-        precipitationMm: round1(daily.precipitation_sum?.[i] ?? 0),
-        aqi: aqiByDay.get(day) ?? 0,
-        windSpeed: round1(windByDay.get(day) ?? 0),
-      }));
-      if (points.length === 0) throw new Error("empty daily data");
-      return { data: points.slice(0, 7), state: "live", source: "Open-Meteo Forecast (Live)" };
-    } catch (err) {
-      return failed("Open-Meteo Forecast (Live)", err);
-    }
-  }
+/** Daily average US AQI by local calendar date (YYYY-MM-DD) from Open-Meteo air quality. */
+async function fetchDailyAqiMap(location: AppLocation): Promise<Map<string, number>> {
+  const airUrl =
+    `https://air-quality-api.open-meteo.com/v1/air-quality` +
+    `?latitude=${location.lat}&longitude=${location.lon}` +
+    `&hourly=us_aqi,pm2_5&forecast_days=7&timezone=auto`;
+  const airJson = (await fetchJson(airUrl)) as HourlyAirJson;
+  return dayAverageAqi(airJson);
 }
 
 function failed(source: string, err: unknown): ToolResponse<never> {
@@ -207,12 +133,6 @@ function num(value: number | null | undefined): number | null {
 
 function round1(value: number): number {
   return Math.round(value * 10) / 10;
-}
-
-function dayLabel(index: number): string {
-  if (index === 0) return "Today";
-  if (index === 1) return "Tomorrow";
-  return `+${index}d`;
 }
 
 const PM25_BP: Array<[number, number]> = [
@@ -237,21 +157,12 @@ function aqiFromPm25(conc: number): number {
 }
 
 interface HourlyAirJson {
-  hourly?: { time?: string[]; us_aqi?: (number | null)[]; pm2_5?: (number | null)[]; pm10?: (number | null)[] };
-}
-
-interface HourlyWxJson {
-  hourly?: { time?: string[]; temperature_2m?: (number | null)[]; relative_humidity_2m?: (number | null)[] };
-}
-
-interface DailyWxJson {
-  daily?: {
+  hourly?: {
     time?: string[];
-    temperature_2m_max?: (number | null)[];
-    temperature_2m_min?: (number | null)[];
-    precipitation_sum?: (number | null)[];
+    us_aqi?: (number | null)[];
+    pm2_5?: (number | null)[];
+    pm10?: (number | null)[];
   };
-  hourly?: { time?: string[]; relative_humidity_2m?: (number | null)[]; wind_speed_10m?: (number | null)[] };
 }
 
 function normalizeHourlyAir(json: HourlyAirJson): HourlyPoint[] {
@@ -267,23 +178,10 @@ function normalizeHourlyAir(json: HourlyAirJson): HourlyPoint[] {
       aqi: Math.round(aqi),
       pm25: round1(pm25),
       pm10: round1(h.pm10?.[i] ?? pm25 * 1.6),
-      temperature: 0,
-      humidity: 50,
+      temperature: null,
+      humidity: null,
     };
   });
-}
-
-function normalizeHourlyWx(json: HourlyWxJson): Map<string, { temperature: number; humidity: number }> {
-  const map = new Map<string, { temperature: number; humidity: number }>();
-  const h = json.hourly;
-  if (!h?.time?.length) return map;
-  h.time.forEach((time, i) => {
-    map.set(time.slice(11, 16), {
-      temperature: round1(h.temperature_2m?.[i] ?? 0),
-      humidity: Math.round(h.relative_humidity_2m?.[i] ?? 50),
-    });
-  });
-  return map;
 }
 
 function dayAverageAqi(json: HourlyAirJson): Map<string, number> {
@@ -309,45 +207,6 @@ function dayAverageAqi(json: HourlyAirJson): Map<string, number> {
   return result;
 }
 
-function dayAverageField(
-  hourly: { time?: string[]; [key: string]: (number | null)[] | string[] | undefined } | undefined,
-  field: string,
-): Map<string, number> {
-  const sums = new Map<string, { total: number; count: number }>();
-  const times = hourly?.time;
-  const values = hourly?.[field] as (number | null)[] | undefined;
-  if (!times || !values) return new Map();
-  times.forEach((time, i) => {
-    const value = values[i];
-    if (typeof value !== "number") return;
-    const day = time.slice(0, 10);
-    const entry = sums.get(day) ?? { total: 0, count: 0 };
-    entry.total += value;
-    entry.count += 1;
-    sums.set(day, entry);
-  });
-  const result = new Map<string, number>();
-  for (const [day, entry] of sums) result.set(day, entry.total / Math.max(1, entry.count));
-  return result;
-}
-
-function dayMaxField(
-  hourly: { time?: string[]; [key: string]: (number | null)[] | string[] | undefined } | undefined,
-  field: string,
-): Map<string, number> {
-  const maxes = new Map<string, number>();
-  const times = hourly?.time;
-  const values = hourly?.[field] as (number | null)[] | undefined;
-  if (!times || !values) return new Map();
-  times.forEach((time, i) => {
-    const value = values[i];
-    if (typeof value !== "number") return;
-    const day = time.slice(0, 10);
-    maxes.set(day, Math.max(maxes.get(day) ?? -Infinity, value));
-  });
-  return maxes;
-}
-
 async function fetchJson(url: string, timeoutMs = 8000): Promise<unknown> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -363,46 +222,124 @@ async function fetchJson(url: string, timeoutMs = 8000): Promise<unknown> {
 const CACHE_TTL_MS = 60_000;
 const cache = new Map<string, { expires: number; value: unknown }>();
 
+function preferLive(): boolean {
+  return !isDemoMode() && config.preferredProvider === "live";
+}
+
+/** Mode-scoped cache key — live and demo payloads never share an entry. */
+function scopedKey(key: string): string {
+  return `${preferLive() ? "L" : "D"}:${key}`;
+}
+
 async function cached<T>(key: string, loader: () => Promise<T>): Promise<T> {
-  const hit = cache.get(key);
+  const fullKey = scopedKey(key);
+  const hit = cache.get(fullKey);
   if (hit && hit.expires > Date.now()) return hit.value as T;
   const value = await loader();
-  cache.set(key, { expires: Date.now() + CACHE_TTL_MS, value });
+  cache.set(fullKey, { expires: Date.now() + CACHE_TTL_MS, value });
   return value;
 }
 
+/** Drop all cached provider payloads (called when Demo Mode is toggled). */
+export function clearProviderCache(): void {
+  cache.clear();
+}
+
+/**
+ * Resolve a domain. When live is preferred, only `live` runs — a failure
+ * surfaces as "unavailable" (never a silent demo fallback; Demo Mode must be
+ * turned on explicitly to get fixtures). When live is not preferred, `demo`
+ * is used directly (no external call).
+ */
 async function resolve<T>(
   key: string,
   live: () => Promise<ToolResponse<T>>,
-  demo: () => Promise<ToolResponse<T>>,
+  demo?: () => Promise<ToolResponse<T>>,
 ): Promise<ToolResponse<T>> {
+  const livePreferred = preferLive();
   return cached(key, async () => {
-    const demoMode = isDemoMode();
-    const preferLive = !demoMode && config.preferredProvider === "live";
-    if (!preferLive) return demo();
-    const result = await live();
-    if (result.data !== null) return result;
-    const fallback = await demo();
+    if (!livePreferred) {
+      if (!demo) {
+        return {
+          data: null,
+          state: "unavailable",
+          source: "demo fixtures",
+          error: "demo loader missing",
+        };
+      }
+      return demo();
+    }
+    return await live();
+  });
+}
+
+/**
+ * Live daily forecast: OpenWeather 5-day/3-hour forecast for weather fields,
+ * merged with Open-Meteo daily AQI (aqi stays null if the air call fails).
+ * No demo fallback — forecast failure means the forecast is unavailable.
+ */
+async function loadLiveDaily(location: AppLocation): Promise<ToolResponse<DailyPoint[]>> {
+  return cached(`daily:${location.id}`, async () => {
+    const forecast = await loadOpenWeatherForecast(location);
+    if (forecast.data === null) {
+      return {
+        data: null,
+        state: "unavailable" as DataState,
+        source: OPENWEATHER_FORECAST_SOURCE,
+        error: forecast.error,
+      };
+    }
+    let aqiByDay = new Map<string, number>();
+    let aqiError: string | undefined;
+    try {
+      aqiByDay = await fetchDailyAqiMap(location);
+    } catch (err) {
+      aqiError =
+        err instanceof Error && err.message.startsWith("HTTP")
+          ? "air-quality provider error"
+          : "air-quality provider unavailable";
+    }
+    const points: DailyPoint[] = forecast.data.map((draft) =>
+      forecastDraftToDaily(draft, aqiByDay.get(draft.dateKey) ?? null),
+    );
     return {
-      ...fallback,
-      error: result.error
-        ? `Live provider unavailable (${result.error}); showing demo data instead.`
+      data: points,
+      state: "live" as DataState,
+      source: OPENWEATHER_FORECAST_SOURCE,
+      error: aqiError
+        ? `Daily AQI overlay unavailable (${aqiError}); forecast shown without AQI.`
         : undefined,
     };
   });
 }
 
-/** Loads environmental data for a location with caching, demo fallback, and source labeling. */
+/** Loads environmental data for a location with caching, source labeling, and honest states. */
 export async function loadEnvironmentalData(location: AppLocation): Promise<EnvironmentalData> {
   const demo = new DemoEnvironmentalDataProvider();
   const live = new LiveOpenMeteoProvider();
   const suffix = location.id;
 
+  const weatherPromise: Promise<ToolResponse<WeatherReading>> = preferLive()
+    ? resolve(`wx:${suffix}`, () => loadOpenWeatherCurrent(location))
+    : cached(`wx:${suffix}`, async () => ({
+        data: buildDemoWeather(location.id),
+        state: "demo" as DataState,
+        source: DEMO_WEATHER_SOURCE,
+      }));
+
+  const dailyPromise: Promise<ToolResponse<DailyPoint[]>> = preferLive()
+    ? loadLiveDaily(location)
+    : cached(`daily:${suffix}`, async () => ({
+        data: buildDemoDaily(location.id),
+        state: "demo" as DataState,
+        source: DEMO_FORECAST_SOURCE,
+      }));
+
   const [air, weather, hourly, daily] = await Promise.all([
     resolve(`air:${suffix}`, () => live.getAirQuality(location), () => demo.getAirQuality(location)),
-    resolve(`wx:${suffix}`, () => live.getWeather(location), () => demo.getWeather(location)),
+    weatherPromise,
     resolve(`hourly:${suffix}`, () => live.getHourly(location), () => demo.getHourly(location)),
-    resolve(`daily:${suffix}`, () => live.getDaily(location), () => demo.getDaily(location)),
+    dailyPromise,
   ]);
 
   const errors: string[] = [];
@@ -412,7 +349,7 @@ export async function loadEnvironmentalData(location: AppLocation): Promise<Envi
   }
 
   // Same preference rule as resolve(): demo fixtures unless live is preferred.
-  const preferLiveRainfall = !isDemoMode() && config.preferredProvider === "live";
+  const preferLiveRainfall = preferLive();
 
   return {
     location,

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Database, FileText, Lightbulb, Plus, Printer } from "lucide-react";
 import type { EnvironmentalReport } from "../../shared/types";
-import { LOCATIONS } from "../../shared/locations";
 import { useApp } from "../context/AppContext";
 import { api, ApiClientError } from "../services/api";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "../components/ui/Card";
 import { RiskPill } from "../components/ui/RiskPill";
 import { InlineError } from "../components/ui/states";
+import { LocationSearch } from "../components/ui/LocationSearch";
 import { formatTimestamp } from "../utils/format";
 
 const SECTION_OPTIONS = [
@@ -19,7 +19,7 @@ const SECTION_OPTIONS = [
 ];
 
 export default function ReportsPage() {
-  const { settings, setLocation } = useApp();
+  const { settings } = useApp();
   const [title, setTitle] = useState("");
   const [include, setInclude] = useState<string[]>(SECTION_OPTIONS.map((s) => s.id));
   const [report, setReport] = useState<EnvironmentalReport | null>(null);
@@ -198,20 +198,11 @@ export default function ReportsPage() {
         <CardHeader title="Configure report" />
         <CardBody className="pt-2 space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-sm font-medium text-slate-700">Location</span>
-              <select
-                value={settings.locationId}
-                onChange={(e) => setLocation(e.target.value)}
-                className="mt-1.5 w-full h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white"
-              >
-                {LOCATIONS.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.name}, {loc.region}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <LocationSearch
+              variant="block"
+              label="Location"
+              id="report-location"
+            />
             <label className="block">
               <span className="text-sm font-medium text-slate-700">Report title (optional)</span>
               <input

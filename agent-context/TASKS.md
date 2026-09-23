@@ -27,6 +27,12 @@
 14. Green Route — ✅ `/route` (alias `/routes`), estimated exposure with noise band
 15. Advanced city intelligence (EcoCity AI) — covered as the dashboard `city-risk` intent (domain risk overview), not a separate page
 16. Advanced analytics — not built (intentionally out of scope; no half-finished analytics UI)
+17. Live weather via OpenWeather (`OPENWEATHER_API_KEY`) — ✅ `server/tools/openweather.ts`
+    (current + 5-day; no demo fallback in live mode; verified on `/api/data-sources`)
+18. Searchable city/location input — ✅ OpenWeather Geocoding (`/api/locations/search`) →
+    self-contained `locationId` → existing `findLocation` architecture (no parallel registry)
+18. Searchable city/location input — ✅ OpenWeather Geocoding (`/api/locations/search`) →
+    self-contained `locationId` → existing `findLocation` architecture (no parallel registry)
 
 **Hard rule:** do not sacrifice a working P0 feature to add multiple unfinished P2 features.
 If time runs short, a smaller set of fully-working P0/P1 features beats a broad set of

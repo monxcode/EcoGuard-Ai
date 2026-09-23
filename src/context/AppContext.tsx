@@ -7,7 +7,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { DEFAULT_LOCATION_ID, findLocation, LOCATIONS } from "../../shared/locations";
+import {
+  DEFAULT_LOCATION_ID,
+  findLocation,
+  isValidLocationId,
+  LOCATIONS,
+} from "../../shared/locations";
 import type { AppLocation, HealthPayload } from "../../shared/types";
 import { api } from "../services/api";
 
@@ -33,8 +38,8 @@ const DEFAULTS: AppSettings = {
 };
 
 function guardLocationId(id: unknown): string {
-  if (typeof id !== "string") return DEFAULT_LOCATION_ID;
-  return LOCATIONS.some((l) => l.id === id) ? id : DEFAULT_LOCATION_ID;
+  if (typeof id !== "string" || !id) return DEFAULT_LOCATION_ID;
+  return isValidLocationId(id) ? id : DEFAULT_LOCATION_ID;
 }
 
 function loadSettings(): AppSettings {

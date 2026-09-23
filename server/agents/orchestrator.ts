@@ -22,6 +22,7 @@ export type Intent =
   | "wildfire"
   | "water"
   | "heat"
+  | "weather"
   | "report"
   | "city-risk"
   | "general";
@@ -34,6 +35,7 @@ const INTENT_RULES: Array<[Intent, RegExp]> = [
   ["wildfire", /\b(wildfire|wild fire|forest fire|fire risk|bushfire|smoke)\b/],
   ["water", /\b(water (stress|scarcity|supply|shortage|level)|drought|reservoir)\b/],
   ["heat", /\b(heat|heatwave|hot|temperature|warm|sun)\b/],
+  ["weather", /\b(weather|forecast|rain today|will it rain|sky|wind speed|humidity now)\b/],
   ["report", /\b(report|full assessment|comprehensive|overall summary)\b/],
   ["city-risk", /\b(risk|risks|safe|danger|overall|city|environment|environmental|condition|today|assessment|watch)\b/],
 ];
@@ -54,6 +56,7 @@ const ROUTING: Record<Intent, DomainAgentId[]> = {
   wildfire: ["weather", "wildfire-risk"],
   water: ["weather", "water-stress"],
   heat: ["weather", "heat-risk"],
+  weather: ["weather", "heat-risk"],
   report: ["air-quality", "weather", "heat-risk", "flood-risk", "wildfire-risk", "water-stress"],
   "city-risk": ["air-quality", "heat-risk", "flood-risk", "wildfire-risk", "water-stress"],
   general: ["air-quality", "weather", "heat-risk"],
