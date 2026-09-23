@@ -122,8 +122,8 @@ export function LocationSearch({
   const listboxId = `${id}-listbox`;
   const inputClass =
     variant === "header"
-      ? "h-9 w-40 sm:w-64 bg-white border border-slate-200 rounded-lg px-2.5 text-sm text-slate-700 placeholder:text-slate-400 hover:border-slate-300 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30"
-      : "mt-1.5 w-full h-10 px-3 text-sm border border-slate-300 rounded-lg bg-white placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30";
+      ? "h-8 w-40 sm:w-64 bg-transparent border-none px-2 text-sm text-[#111111] placeholder:text-[#888888] focus:outline-none focus:ring-0"
+      : "mt-1.5 w-full h-10 px-3 text-sm border border-[#EAEAEA] rounded-md bg-white placeholder:text-[#888888] text-[#111111] focus:outline-none focus:border-[#111111] transition-colors";
 
   return (
     <div
@@ -133,13 +133,13 @@ export function LocationSearch({
       {variant === "header" ? (
         <span className="sr-only">{label}</span>
       ) : (
-        <label htmlFor={id} className="text-sm font-medium text-slate-700">
+        <label htmlFor={id} className="text-xs font-semibold text-[#111111] uppercase tracking-[0.05em]">
           {label}
         </label>
       )}
-      <div className={variant === "header" ? "flex items-center gap-1.5" : ""}>
+      <div className={variant === "header" ? "flex items-center gap-1.5 bg-black/5 hover:bg-black/10 rounded-md px-2 py-0.5 transition-colors" : ""}>
         {variant === "header" ? (
-          <Search className="w-4 h-4 text-slate-400 shrink-0" aria-hidden />
+          <Search className="w-3.5 h-3.5 text-[#666666] shrink-0" aria-hidden />
         ) : null}
         <input
           id={id}
@@ -168,16 +168,16 @@ export function LocationSearch({
           id={listboxId}
           role="listbox"
           aria-label="City suggestions"
-          className="absolute left-0 right-0 z-40 mt-1 min-w-56 max-h-64 overflow-auto bg-white border border-slate-200 rounded-lg shadow-lg py-1"
+          className="absolute left-0 right-0 z-40 mt-1 min-w-[240px] max-h-64 overflow-auto bg-white border border-[#EAEAEA] rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-1"
         >
           {loading ? (
-            <p className="flex items-center gap-2 px-3 py-2 text-xs text-slate-500">
+            <p className="flex items-center gap-2 px-3 py-2 text-xs text-[#888888]">
               <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden />
               Searching cities…
             </p>
           ) : null}
           {!loading && results.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-slate-500">No matching cities found.</p>
+            <p className="px-3 py-2 text-xs text-[#888888]">No matching cities found.</p>
           ) : null}
           {!loading && results.length > 0
             ? results.map((loc, index) => (
@@ -189,16 +189,16 @@ export function LocationSearch({
                   aria-selected={index === active}
                   onClick={() => selectLocation(loc)}
                   onMouseEnter={() => setActive(index)}
-                  className={`w-full flex items-start gap-2 px-3 py-2 text-left text-sm ${
+                  className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-md text-left text-sm transition-colors ${
                     index === active
-                      ? "bg-emerald-50 text-emerald-900"
-                      : "text-slate-700 hover:bg-slate-50"
+                      ? "bg-black/5 text-[#111111]"
+                      : "text-[#444444] hover:bg-black/5 hover:text-[#111111]"
                   } ${loc.id === location.id ? "font-semibold" : ""}`}
                 >
-                  <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-slate-400" aria-hidden />
+                  <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 opacity-40" aria-hidden />
                   <span className="min-w-0">
-                    <span className="block truncate">{loc.name}</span>
-                    <span className="block truncate text-xs text-slate-500">
+                    <span className="block truncate leading-tight">{loc.name}</span>
+                    <span className="block truncate text-[11px] text-[#888888] mt-0.5">
                       {loc.region ? `${loc.region} · ` : ""}
                       {loc.lat.toFixed(4)}, {loc.lon.toFixed(4)}
                     </span>
@@ -207,7 +207,7 @@ export function LocationSearch({
               ))
             : null}
           {error && !loading ? (
-            <p className="border-t border-slate-100 px-3 py-2 text-xs text-amber-700 bg-amber-50">
+            <p className="px-3 py-2 text-xs text-[#E5484D] bg-[#FAFAFA] rounded-md mt-1">
               {error}
             </p>
           ) : null}

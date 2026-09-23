@@ -17,16 +17,17 @@ export function LoadingState({ label = "Loading data…" }: { label?: string }) 
 
 export function PageSkeleton() {
   return (
-    <div className="space-y-4" role="status" aria-label="Loading page">
-      <div className="h-8 w-56 bg-slate-200 rounded animate-pulse" />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="space-y-6" role="status" aria-label="Loading page">
+      <div className="h-8 w-64 bg-[#F0F0F0] rounded-md animate-pulse" />
+      <div className="h-4 w-40 bg-[#F0F0F0] rounded-md animate-pulse" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 pt-4">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-32 bg-white border border-slate-200 rounded-xl animate-pulse" />
+          <div key={i} className="h-36 bg-white border border-[#EAEAEA] rounded-[14px] animate-pulse" />
         ))}
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="h-72 bg-white border border-slate-200 rounded-xl animate-pulse lg:col-span-2" />
-        <div className="h-72 bg-white border border-slate-200 rounded-xl animate-pulse" />
+        <div className="h-80 bg-white border border-[#EAEAEA] rounded-[14px] animate-pulse lg:col-span-2" />
+        <div className="h-80 bg-white border border-[#EAEAEA] rounded-[14px] animate-pulse" />
       </div>
       <span className="sr-only">Loading…</span>
     </div>
@@ -42,17 +43,17 @@ export function ErrorState({
 }) {
   return (
     <Card className="p-6">
-      <div className="flex flex-col items-start gap-3">
-        <div className="flex items-center gap-2 text-red-700">
+      <div className="flex flex-col items-start gap-4">
+        <div className="flex items-center gap-2 text-[#C0492E]">
           <AlertTriangle className="w-5 h-5" aria-hidden />
-          <h2 className="font-semibold">Something went wrong</h2>
+          <h2 className="font-semibold tracking-tight text-[#111111]">Something went wrong</h2>
         </div>
-        <p className="text-sm text-slate-600">{message}</p>
+        <p className="text-sm text-[#666666]">{message}</p>
         {onRetry ? (
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#111111] bg-white border border-[#EAEAEA] shadow-sm rounded-lg hover:bg-black/5 transition-colors"
           >
             <RefreshCw className="w-4 h-4" aria-hidden />
             Try again

@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CloudRain, Droplets, Flame, Thermometer, Wind } from "lucide-react";
 import { aqiCategory } from "../../../shared/aqi";
 import type { DashboardPayload } from "../../../shared/types";
 import { useApp } from "../../context/AppContext";
@@ -25,307 +25,262 @@ export function DashboardView({ data }: { data: DashboardPayload }) {
   const WeatherGlyph = weatherIcon(weather?.icon, weather?.weatherCondition);
 
   const domains = [
-    { id: "air-quality", label: "Air Quality" },
-    { id: "heat-risk", label: "Heat Risk" },
-    { id: "flood-risk", label: "Flood Risk" },
-    { id: "wildfire-risk", label: "Wildfire Risk" },
-    { id: "water-stress", label: "Water Stress" },
+    { id: "heat-risk", label: "Heat Risk", icon: Thermometer },
+    { id: "flood-risk", label: "Flood Risk", icon: CloudRain },
+    { id: "wildfire-risk", label: "Wildfire Risk", icon: Flame },
+    { id: "water-stress", label: "Water Stress", icon: Droplets },
   ] as const;
 
+  const firstInsightSentence = data.advisory.text.split(/(?<=[.!?])\s+/)[0] || "Analyzing environmental data.";
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="ClimatePulse"
-        subtitle={`${data.location.name}, ${data.location.region} · Updated ${formatTimestamp(data.generatedAt)}`}
-        actions={
-          data.overall ? <RiskPill level={data.overall.result.riskLevel} size="lg" /> : null
-        }
-      />
-
-      {/* Provider errors — never hidden behind a blank card */}
-      {data.errors.length > 0 ? (
-        <Card className="p-4 border-amber-200 bg-amber-50">
-          <p className="text-xs font-semibold text-amber-800">Data availability</p>
-          <ul className="mt-1.5 text-sm text-amber-900 list-disc pl-5 space-y-1">
-            {data.errors.map((e) => (
-              <li key={e}>{e}</li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
-
-      {/* Row 1: hero metrics */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-slate-500">Air quality index</p>
-            <DataStateBadge state={data.states.air} />
+    <div className="space-y-12 pb-10">
+      
+      {/* Hero Section */}
+      <section className="pt-2">
+        <div className="flex flex-col gap-1 mb-8">
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl sm:text-5xl font-bold text-[#111111] tracking-tight">{data.location.name}</h1>
+            <DataStateBadge state={data.states.air} className="mt-2" />
           </div>
-          {air && category ? (
-            <>
-              <p className="mt-2 text-5xl font-semibold text-slate-900 tabular-nums leading-none">
-                {air.aqi}
-              </p>
-              <p className="mt-2 text-sm font-medium text-slate-700">{category.label}</p>
-              <p className="mt-1 text-xs text-slate-500">
-                PM2.5 {air.pm25} µg/m³ · PM10 {air.pm10} µg/m³
-              </p>
-            </>
-          ) : (
-            <p className="mt-3 text-sm text-slate-500">Data unavailable</p>
-          )}
-        </Card>
+          <p className="text-sm text-[#888888] font-medium tracking-[0.02em]">
+            {data.location.region} · Updated {formatTimestamp(data.generatedAt)}
+          </p>
+        </div>
 
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-slate-500">Weather</p>
-            <DataStateBadge state={data.states.weather} />
+        {data.errors.length > 0 ? (
+          <div className="mb-8 p-4 rounded-xl bg-[#FFF4F2] border border-[#FCDED8] text-[#C0492E] text-sm">
+            <p className="font-semibold mb-1">Data availability issues:</p>
+            <ul className="list-disc pl-5 space-y-0.5">
+              {data.errors.map((e) => <li key={e}>{e}</li>)}
+            </ul>
           </div>
-          {weather ? (
-            <>
-              <div className="mt-2 flex items-start gap-3">
-                <WeatherGlyph className="w-8 h-8 text-sky-600 shrink-0 mt-1" aria-hidden />
-                <div>
-                  <p className="text-4xl font-semibold text-slate-900 tabular-nums leading-none">
-                    {formatTempFull(weather.temperature, settings.units)}
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-slate-700 capitalize">
-                    {weather.weatherDescription ?? weather.weatherCondition ?? "Current conditions"}
-                  </p>
-                </div>
-              </div>
-              <p className="mt-1.5 text-sm text-slate-600">
-                Feels like{" "}
-                {weather.apparentTemperature !== null
-                  ? formatTempFull(weather.apparentTemperature, settings.units)
-                  : "—"}
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Humidity {weather.humidity}% · Wind {formatWind(weather.windSpeed, settings.units)}
-              </p>
-              <details className="group mt-2">
-                <summary className="cursor-pointer text-[11px] font-medium text-slate-400 hover:text-slate-600">
-                  Provider details
-                </summary>
-                <div className="mt-1.5 space-y-0.5 text-[11px] text-slate-400 break-words">
-                  <p>
-                    Updated {formatTimestampInOffset(weather.timestamp, weather.timezoneOffset)} (
-                    {formatUtcOffset(weather.timezoneOffset)}) · {data.sources.weather}
-                  </p>
-                  <p>
-                    {weather.providerCityName
-                      ? `${weather.providerCityName}${weather.providerCountry ? `, ${weather.providerCountry}` : ""} · `
-                      : ""}
-                    /data/2.5/weather · sent {data.location.lat.toFixed(4)},{" "}
-                    {data.location.lon.toFixed(4)}
-                    {weather.providerLat !== null &&
-                    weather.providerLon !== null &&
-                    (Math.abs(weather.providerLat - data.location.lat) > 0.0005 ||
-                      Math.abs(weather.providerLon - data.location.lon) > 0.0005)
-                      ? ` · grid ${weather.providerLat.toFixed(4)}, ${weather.providerLon.toFixed(4)}`
-                      : ""}
-                  </p>
-                  <p>
-                    Pressure {weather.pressure ?? "—"} hPa · Cloud {weather.cloudiness ?? "—"}%
-                  </p>
-                </div>
-              </details>
-            </>
-          ) : (
-            <div className="mt-3">
-              <p className="text-sm font-semibold text-rose-700">Weather unavailable</p>
-              <p className="mt-1 text-xs text-slate-500">
-                Try again shortly or switch to Demo Mode in Settings.
-              </p>
+        ) : null}
+
+        <div className="flex flex-wrap items-end gap-x-10 gap-y-6">
+          {/* AQI Block */}
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#888888] mb-1">Air Quality</p>
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-6xl font-semibold tracking-tighter text-[#111111] leading-none">
+                {air?.aqi ?? "--"}
+              </span>
+              {category && <span className="text-lg font-medium text-[#666666] tracking-tight">{category.label}</span>}
             </div>
-          )}
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-slate-500">Heat risk</p>
-            {runsById["heat-risk"] ? (
-              <RiskPill level={runsById["heat-risk"].result.riskLevel} size="sm" />
-            ) : null}
           </div>
-          <div className="mt-3">
-            {runsById["heat-risk"] ? (
-              <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">
-                {runsById["heat-risk"].result.summary}
-              </p>
+          
+          <div className="hidden sm:block w-px h-12 bg-[#EAEAEA]" />
+
+          {/* Weather Block */}
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#888888] mb-1">Current</p>
+            <div className="flex items-center gap-3">
+              {weather ? <WeatherGlyph className="w-8 h-8 text-[#111111]" aria-hidden /> : null}
+              <span className="text-5xl font-semibold tracking-tighter text-[#111111] leading-none">
+                {weather ? formatTempFull(weather.temperature, settings.units) : "--"}
+              </span>
+            </div>
+          </div>
+
+          <div className="hidden md:block w-px h-12 bg-[#EAEAEA]" />
+
+          {/* Risk Block */}
+          <div className="pb-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#888888] mb-2">Primary Risk</p>
+            {data.overall ? (
+              <RiskPill level={data.overall.result.riskLevel} size="lg" className="shadow-sm" />
             ) : (
-              <p className="text-sm text-slate-500">Heat assessment unavailable.</p>
+              <span className="text-sm text-[#888888]">Unavailable</span>
             )}
           </div>
-        </Card>
+        </div>
 
-        <Card className="p-4 bg-slate-900 border-slate-800">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-slate-400">Overall risk</p>
-            {data.overall ? <RiskPill level={data.overall.result.riskLevel} size="sm" /> : null}
-          </div>
-          <p className="mt-3 text-sm text-slate-200 leading-relaxed">
-            {data.overall ? data.overall.result.summary : "Overall assessment unavailable."}
-          </p>
-          {data.overall ? (
-            <p className="mt-2 text-[11px] text-slate-400">
-              Combined from {data.agentRuns.length} agents · confidence{" "}
-              {Math.round(data.overall.result.confidence * 100)}%
+        <div className="mt-8 p-5 bg-[#FAFAFA] border border-[#EAEAEA] rounded-[16px] shadow-[0_2px_8px_-4px_rgba(0,0,0,0.02)] max-w-3xl">
+          <div className="flex gap-3">
+            <div className="w-1.5 h-auto bg-[#10b981] rounded-full shrink-0" />
+            <p className="text-[15px] text-[#222222] leading-relaxed font-medium">
+              {firstInsightSentence}
             </p>
-          ) : null}
-        </Card>
-      </div>
+          </div>
+        </div>
+      </section>
 
-      {/* Row 2: five-domain risk overview */}
-      <Card>
-        <CardHeader
-          title="Risk overview"
-          action={<DataStateBadge state={data.states.air} />}
-        />
-        <CardBody className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5 pt-2">
+      {/* Air Intelligence */}
+      <section>
+        <h2 className="text-xl font-bold text-[#111111] mb-4 tracking-tight">Air Intelligence</h2>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader title="24-Hour Trend" action={<DataStateBadge state={data.states.airTrend} />} />
+            <CardBody className="pt-2">
+              <AqiTrendChart data={data.hourly} />
+            </CardBody>
+          </Card>
+          
+          <Card>
+            <CardHeader title="Primary Pollutants" />
+            <CardBody className="pt-0">
+               {air ? (
+                 <div className="space-y-4">
+                   <div>
+                     <div className="flex justify-between text-sm mb-1">
+                       <span className="text-[#666666] font-medium">PM2.5</span>
+                       <span className="font-semibold text-[#111111]">{air.pm25} <span className="text-[10px] text-[#888888] font-normal">µg/m³</span></span>
+                     </div>
+                     <div className="h-1.5 w-full bg-[#F0F0F0] rounded-full overflow-hidden">
+                       <div className="h-full bg-[#111111] rounded-full" style={{ width: `${Math.min(100, (air.pm25 / 50) * 100)}%` }} />
+                     </div>
+                   </div>
+                   <div>
+                     <div className="flex justify-between text-sm mb-1">
+                       <span className="text-[#666666] font-medium">PM10</span>
+                       <span className="font-semibold text-[#111111]">{air.pm10} <span className="text-[10px] text-[#888888] font-normal">µg/m³</span></span>
+                     </div>
+                     <div className="h-1.5 w-full bg-[#F0F0F0] rounded-full overflow-hidden">
+                       <div className="h-full bg-[#666666] rounded-full" style={{ width: `${Math.min(100, (air.pm10 / 100) * 100)}%` }} />
+                     </div>
+                   </div>
+                   <div className="pt-2">
+                     <p className="text-xs text-[#888888] leading-relaxed">
+                       {runsById["air-quality"]?.result.summary || "Detailed analysis unavailable."}
+                     </p>
+                   </div>
+                 </div>
+               ) : (
+                 <p className="text-sm text-[#888888]">Data unavailable</p>
+               )}
+            </CardBody>
+          </Card>
+        </div>
+      </section>
+
+      {/* Climate & Forecast */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+           <h2 className="text-xl font-bold text-[#111111] tracking-tight">Climate & Forecast</h2>
+           <DataStateBadge state={data.states.forecast} />
+        </div>
+        <Card>
+          <CardBody className="grid gap-8 lg:grid-cols-2 p-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.05em] font-semibold text-[#888888] mb-4">Temperature</p>
+              <TemperatureRangeChart data={data.daily} />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.05em] font-semibold text-[#888888] mb-4">Rainfall</p>
+              <RainfallChart data={data.daily} />
+            </div>
+          </CardBody>
+        </Card>
+      </section>
+
+      {/* Hazard Overview */}
+      <section>
+        <h2 className="text-xl font-bold text-[#111111] mb-4 tracking-tight">Hazard Overview</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {domains.map((domain) => {
             const run = runsById[domain.id];
+            const DIcon = domain.icon;
             return (
-              <div key={domain.id} className="rounded-lg bg-slate-50 p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold text-slate-700">{domain.label}</p>
-                  {run ? (
-                    <RiskPill level={run.result.riskLevel} size="sm" />
-                  ) : (
-                    <span className="text-[11px] text-slate-400">—</span>
-                  )}
-                </div>
-                <p className="mt-1.5 text-xs text-slate-500 line-clamp-2">
-                  {run ? run.result.summary : "Assessment unavailable."}
-                </p>
-              </div>
+              <Card key={domain.id} className="flex flex-col hover:border-[#D0D0D0] transition-colors">
+                <CardBody className="flex-1 flex flex-col p-5">
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    <div className="flex items-center gap-2 text-[#111111]">
+                       <DIcon className="w-4 h-4 text-[#888888]" />
+                       <span className="text-sm font-semibold tracking-tight">{domain.label}</span>
+                    </div>
+                    {run ? (
+                      <RiskPill level={run.result.riskLevel} size="sm" />
+                    ) : (
+                      <span className="text-[11px] text-[#888888]">—</span>
+                    )}
+                  </div>
+                  <p className="text-[13px] text-[#666666] leading-relaxed line-clamp-3">
+                    {run ? run.result.summary : "Assessment unavailable."}
+                  </p>
+                </CardBody>
+              </Card>
             );
           })}
-        </CardBody>
-      </Card>
+        </div>
+      </section>
 
-      {/* Row 3: trends + alerts */}
-      <div className="grid gap-4 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
-          <CardHeader
-            title="AQI trend · 24 hours"
-            action={<DataStateBadge state={data.states.airTrend} />}
-          />
-          <CardBody className="pt-2">
-            <AqiTrendChart data={data.hourly} />
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader title="Alerts" />
-          <CardBody className="pt-2 space-y-2">
+      {/* Recommendations & Alerts */}
+      <section className="grid gap-6 lg:grid-cols-2">
+         <div>
+            <h2 className="text-xl font-bold text-[#111111] mb-4 tracking-tight">Active Alerts</h2>
             {data.alerts.length === 0 ? (
-              <p className="text-sm text-slate-500">No elevated-risk alerts for this location.</p>
+               <Card>
+                  <CardBody className="py-8 text-center">
+                     <p className="text-sm text-[#888888]">No elevated-risk alerts for this location.</p>
+                  </CardBody>
+               </Card>
             ) : (
-              data.alerts.map((alert) => (
-                <div key={alert.id} className="border border-slate-200 rounded-lg p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-slate-800">{alert.title}</p>
-                    <RiskPill level={alert.severity} size="sm" />
-                  </div>
-                  <p className="mt-1 text-xs text-slate-600 line-clamp-3">{alert.message}</p>
-                </div>
-              ))
+               <div className="space-y-3">
+                  {data.alerts.map((alert) => (
+                    <Card key={alert.id} className="border-[#FCDED8] shadow-[0_4px_12px_rgba(229,72,77,0.05)]">
+                       <CardBody className="p-4">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <p className="text-sm font-semibold text-[#111111]">{alert.title}</p>
+                            <RiskPill level={alert.severity} size="sm" />
+                          </div>
+                          <p className="text-[13px] text-[#666666] leading-relaxed">{alert.message}</p>
+                       </CardBody>
+                    </Card>
+                  ))}
+               </div>
             )}
-            <p className="text-[11px] text-slate-400 pt-1">
-              In-app advisory — not an official government alert.
-            </p>
-          </CardBody>
-        </Card>
-      </div>
+         </div>
 
-      {/* Row 4: 7-day forecast (temperature + rainfall) */}
-      <Card>
-        <CardHeader
-          title="7-day forecast"
-          action={<DataStateBadge state={data.states.forecast} />}
-        />
-        <CardBody className="pt-2 grid gap-6 lg:grid-cols-2">
-          <div>
-            <p className="text-xs font-medium text-slate-500 mb-1">Temperature</p>
-            <TemperatureRangeChart data={data.daily} />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 mb-1">Rainfall</p>
-            <RainfallChart data={data.daily} />
-          </div>
-        </CardBody>
-      </Card>
+         <div>
+            <h2 className="text-xl font-bold text-[#111111] mb-4 tracking-tight">AI Insights</h2>
+            <Card>
+               <CardBody className="p-5 space-y-4">
+                  <p className="text-[14px] text-[#444444] leading-relaxed whitespace-pre-wrap">
+                     {data.advisory.text}
+                  </p>
+                  <details className="group border-t border-[#F0F0F0] pt-4">
+                     <summary className="flex cursor-pointer items-center justify-between text-xs font-semibold text-[#888888] hover:text-[#111111] uppercase tracking-[0.05em] transition-colors">
+                       <span>Analysis Details</span>
+                       <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" aria-hidden />
+                     </summary>
+                     <div className="mt-4 space-y-4">
+                       <div>
+                          <p className="text-[11px] text-[#666666] mb-2 uppercase tracking-[0.05em]">Agents Used</p>
+                          <div className="flex flex-wrap gap-2">
+                             {data.advisory.agentsUsed.map((name) => (
+                               <span key={name} className="px-2 py-1 text-[11px] font-medium bg-[#FAFAFA] text-[#111111] border border-[#EAEAEA] rounded-md">
+                                 {name}
+                               </span>
+                             ))}
+                          </div>
+                       </div>
+                       {data.advisory.limitations.length > 0 && (
+                          <div>
+                             <p className="text-[11px] text-[#666666] mb-2 uppercase tracking-[0.05em]">Limitations</p>
+                             <ul className="text-xs text-[#666666] list-disc pl-4 space-y-1">
+                               {data.advisory.limitations.map((item) => (
+                                 <li key={item}>{item}</li>
+                               ))}
+                             </ul>
+                          </div>
+                       )}
+                     </div>
+                  </details>
+               </CardBody>
+            </Card>
+         </div>
+      </section>
 
-      {/* Row 5: AI summary */}
-      <Card>
-        <CardHeader
-          title="AI summary"
-          action={
-            <span className="px-1.5 py-px text-[10px] font-medium border border-violet-200 bg-violet-50 text-violet-700 rounded-full">
-              {data.advisory.usedGemini ? "Gemini" : "Rules-based"}
-            </span>
-          }
-        />
-        <CardBody className="pt-2 space-y-3">
-          <p className="text-sm text-slate-700 leading-relaxed">{data.advisory.text}</p>
-          <details className="group border-t border-slate-100 pt-3">
-            <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-600 hover:text-slate-800">
-              <span>Agents used &amp; limitations ({data.advisory.limitations.length})</span>
-              <ChevronDown
-                className="w-3.5 h-3.5 transition-transform group-open:rotate-180"
-                aria-hidden
-              />
-            </summary>
-            <div className="mt-3 space-y-3">
-              <div className="flex flex-wrap gap-1.5">
-                {data.advisory.agentsUsed.map((name) => (
-                  <span
-                    key={name}
-                    className="px-2 py-0.5 text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full"
-                  >
-                    {name}
-                  </span>
-                ))}
-              </div>
-              <ul className="text-xs text-slate-500 list-disc pl-4 space-y-0.5">
-                {data.advisory.limitations.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          </details>
-        </CardBody>
-      </Card>
-
-      {/* Row 6: data sources (collapsed) */}
-      <Card>
-        <CardBody className="py-3">
-          <details className="group">
-            <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-600 hover:text-slate-800">
-              <span>Data sources for this view</span>
-              <ChevronDown
-                className="w-3.5 h-3.5 transition-transform group-open:rotate-180"
-                aria-hidden
-              />
-            </summary>
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
-              <span className="px-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded text-slate-600">
-                Air: {data.sources.air}
-              </span>
-              <span className="px-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded text-slate-600">
-                Weather: {data.sources.weather}
-              </span>
-              <span className="px-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded text-slate-600">
-                Trend: {data.sources.airTrend}
-              </span>
-              <span className="px-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded text-slate-600">
-                Forecast: {data.sources.forecast}
-              </span>
-            </div>
-          </details>
-        </CardBody>
-      </Card>
+      {/* Provider Info */}
+      <section className="pt-4 border-t border-[#EAEAEA]">
+         <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-[#888888]">
+            <span>Air: {data.sources.air}</span>
+            <span>Weather: {data.sources.weather}</span>
+            <span>Trend: {data.sources.airTrend}</span>
+            <span>Forecast: {data.sources.forecast}</span>
+         </div>
+      </section>
+      
     </div>
   );
 }
