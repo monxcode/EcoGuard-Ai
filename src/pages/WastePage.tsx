@@ -18,7 +18,8 @@ import { PageHeader } from "../components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "../components/ui/Card";
 import { ConfidenceBar } from "../components/ui/ConfidenceBar";
 import { DataStateBadge } from "../components/ui/DataStateBadge";
-import { ErrorState, InlineError, PageSkeleton } from "../components/ui/states";
+import { Button, Chip } from "../components/ui/Button";
+import { EmptyState, ErrorState, InlineError, NoticeStrip, PageSkeleton } from "../components/ui/states";
 import { AgentResultCard } from "../components/agents/AgentResultCard";
 
 const CATEGORY_ICONS: Record<WasteCategory, typeof Recycle> = {
@@ -108,26 +109,25 @@ export default function WastePage() {
     return <ErrorState message={samplesState.error} onRetry={samplesState.reload} />;
 
   const samples = samplesState.data ?? [];
-  const HazardIcon = CATEGORY_ICONS.hazardous;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Waste Intelligence"
         subtitle="WasteWise — classify waste and get safe disposal guidance"
-        actions={
-          result ? (
-            <DataStateBadge state={result.isDemo ? "demo" : "live"} />
-          ) : null
-        }
+        actions={result ? <DataStateBadge state={result.isDemo ? "demo" : "live"} /> : null}
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Input side */}
+      <div className="grid gap-6 lg:grid-cols-2 items-start">
+        {/* ── Input side ────────────────────────────────── */}
         <div className="space-y-4">
           <Card>
-            <CardHeader title="Demo samples" action={<DataStateBadge state="demo" />} />
-            <CardBody className="pt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <CardHeader
+              title="Demo samples"
+              subtitle="Pick a sample to classify"
+              action={<DataStateBadge state="demo" />}
+            />
+            <CardBody className="pt-1 grid grid-cols-2 sm:grid-cols-3 gap-2">
               {samples.map((sample) => {
                 const Icon = CATEGORY_ICONS[sample.category];
                 const active = selectedSample === sample.id;
@@ -144,10 +144,10 @@ export default function WastePage() {
                       setError(null);
                     }}
                     aria-pressed={active}
-                    className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border text-center transition-colors ${
+                    className={`flex flex-col items-center gap-1.5 p-3.5 rounded-lg border text-center transition-colors ${
                       active
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-900"
-                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                        ? "border-accent bg-accent-soft text-accent-2"
+                        : "border-line bg-surface text-ink-2 hover:bg-surface-2 hover:border-[#d8d5cc]"
                     }`}
                   >
                     <Icon className="w-5 h-5" aria-hidden />
@@ -160,24 +160,24 @@ export default function WastePage() {
 
           <Card>
             <CardHeader title="Or upload an image" subtitle="png, jpeg, webp · max 4 MB" />
-            <CardBody className="pt-2 space-y-3">
+            <CardBody className="pt-1 space-y-3">
               <input
                 ref={fileRef}
                 type="file"
                 accept="image/png,image/jpeg,image/webp,image/gif"
                 onChange={(e) => onFile(e.target.files?.[0])}
-                className="block w-full text-sm text-slate-600 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200"
+                className="block w-full text-sm text-ink-2 file:mr-3 file:px-3.5 file:py-2 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-canvas-2 file:text-ink hover:file:bg-line-2 file:cursor-pointer file:transition-colors"
                 aria-label="Upload a waste image"
               />
               {previewUrl ? (
                 <img
                   src={previewUrl}
                   alt="Uploaded waste preview"
-                  className="w-full max-h-48 object-contain bg-slate-50 border border-slate-200 rounded-lg"
+                  className="w-full max-h-48 object-contain bg-surface-2 border border-line rounded-lg"
                 />
               ) : (
-                <div className="flex items-center justify-center h-24 border border-dashed border-slate-300 rounded-lg text-slate-400 text-sm">
-                  <Upload className="w-4 h-4 mr-2" aria-hidden />
+                <div className="flex items-center justify-center h-24 border border-dashed border-line rounded-lg text-ink-3 text-sm gap-2 bg-surface-2">
+                  <Upload className="w-4 h-4" aria-hidden />
                   No image selected
                 </div>
               )}
@@ -185,115 +185,114 @@ export default function WastePage() {
           </Card>
 
           <div className="flex gap-2">
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              className="flex-1"
               onClick={classify}
               disabled={pending || (!selectedSample && !dataUrl)}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 rounded-lg"
             >
               {pending ? "Classifying…" : "Classify waste"}
-            </button>
-            <button
-              type="button"
-              onClick={reset}
-              className="px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
-            >
+            </Button>
+            <Button variant="secondary" onClick={reset}>
               Reset
-            </button>
+            </Button>
           </div>
           {error ? <InlineError message={error} /> : null}
         </div>
 
-        {/* Result side */}
+        {/* ── Result side ───────────────────────────────── */}
         <div className="space-y-4">
           {!result ? (
             <Card>
               <CardBody>
-                <div className="text-center py-10 text-sm text-slate-500">
-                  <Recycle className="w-8 h-8 mx-auto text-slate-300 mb-2" aria-hidden />
-                  Pick a demo sample or upload an image to see classification results.
-                </div>
+                <EmptyState
+                  icon={Recycle}
+                  title="No classification yet"
+                  description="Pick a demo sample or upload an image to see the category, disposal guidance and environmental impact."
+                />
               </CardBody>
             </Card>
           ) : (
             <>
-              <Card className={result.category === "hazardous" ? "border-red-300" : ""}>
+              <Card as="article">
                 <CardHeader
-                  title={result.isDemo ? "Demo Classification" : "AI Classification"}
+                  title={result.isDemo ? "Demo classification" : "AI classification"}
                   action={
-                    <span
-                      className={`px-1.5 py-px text-[10px] font-medium rounded-full border ${
-                        result.usedGemini
-                          ? "bg-violet-50 border-violet-200 text-violet-700"
-                          : "bg-white border-dashed border-slate-400 text-slate-500"
-                      }`}
-                    >
+                    <Chip tone={result.usedGemini ? "blue" : "neutral"}>
                       {result.usedGemini ? "Gemini vision" : "Deterministic demo"}
-                    </span>
+                    </Chip>
                   }
                 />
-                <CardBody className="pt-2 space-y-4">
+                <CardBody className="pt-1 space-y-4">
                   {result.category === "hazardous" ? (
-                    <div className="flex gap-2 rounded-lg border border-red-300 bg-red-50 p-3">
-                      <HazardIcon className="w-5 h-5 text-red-700 shrink-0" aria-hidden />
-                      <div>
-                        <p className="text-sm font-semibold text-red-900">Potentially hazardous</p>
-                        <p className="text-xs text-red-800 mt-0.5">
-                          Do not place hazardous material in household recycling or general waste.
-                          When uncertain, we default to the safest handling advice.
-                        </p>
-                      </div>
-                    </div>
+                    <NoticeStrip tone="danger">
+                      <strong className="font-semibold">Potentially hazardous.</strong> Do not
+                      place hazardous material in household recycling or general waste. When
+                      uncertain, we default to the safest handling advice.
+                    </NoticeStrip>
                   ) : null}
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3.5 pt-1">
                     {(() => {
                       const Icon = CATEGORY_ICONS[result.category];
                       return (
-                        <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-100 text-slate-600">
-                          <Icon className="w-6 h-6" aria-hidden />
+                        <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-canvas-2 text-ink-2">
+                          <Icon className="w-5 h-5" aria-hidden />
                         </span>
                       );
                     })()}
                     <div>
-                      <p className="text-lg font-semibold text-slate-900 leading-tight">{result.label}</p>
-                      <p className="text-xs text-slate-500 capitalize">{result.category}</p>
+                      <p className="text-lg font-semibold text-ink leading-tight">
+                        {result.label}
+                      </p>
+                      <p className="text-xs text-ink-3 capitalize mt-0.5">{result.category}</p>
                     </div>
                   </div>
 
                   <ConfidenceBar value={result.confidence} />
 
                   <div>
-                    <h3 className="text-xs font-medium text-slate-500 mb-1.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-3 mb-2">
                       Disposal &amp; recycling guidance
-                    </h3>
-                    <ul className="space-y-1.5 text-sm text-slate-700 list-disc pl-4">
+                    </p>
+                    <ul className="space-y-1.5">
                       {result.disposalGuidance.map((g) => (
-                        <li key={g}>{g}</li>
+                        <li
+                          key={g}
+                          className="flex gap-2 text-[13px] text-ink-2 leading-relaxed"
+                        >
+                          <span
+                            className="mt-[7px] w-1 h-1 rounded-full bg-accent shrink-0"
+                            aria-hidden
+                          />
+                          {g}
+                        </li>
                       ))}
                     </ul>
                   </div>
 
-                  <details className="group border-t border-slate-100 pt-3">
-                    <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-600 hover:text-slate-800">
+                  <details className="group border-t border-line-2 pt-3">
+                    <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-ink-2 hover:text-ink">
                       <span>View details</span>
                       <ChevronDown
-                        className="w-3.5 h-3.5 transition-transform group-open:rotate-180"
+                        className="w-3.5 h-3.5 transition-transform group-open:rotate-180 text-ink-3"
                         aria-hidden
                       />
                     </summary>
                     <div className="mt-3 space-y-3">
                       <div>
-                        <h4 className="text-xs font-medium text-slate-500 mb-1">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-3 mb-1.5">
                           Environmental impact
-                        </h4>
-                        <p className="text-sm text-slate-700 leading-relaxed">
+                        </p>
+                        <p className="text-[13px] text-ink-2 leading-relaxed">
                           {result.environmentalImpact}
                         </p>
                       </div>
                       <div>
-                        <h4 className="text-xs font-medium text-slate-500 mb-1">Limitations</h4>
-                        <ul className="space-y-1 text-xs text-slate-600 list-disc pl-4">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-3 mb-1.5">
+                          Limitations
+                        </p>
+                        <ul className="space-y-1 text-xs text-ink-3 list-disc pl-4">
                           {result.limitations.map((l) => (
                             <li key={l}>{l}</li>
                           ))}

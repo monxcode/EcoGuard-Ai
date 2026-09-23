@@ -2,19 +2,19 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Loader2, MapPin, Search } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { LOCATIONS } from "../../../shared/locations";
-import type { AppLocation } from "../../../shared/types";
+import type { AppLocation, DataState } from "../../../shared/types";
 import { api } from "../../services/api";
 
 interface LocationSearchProps {
-  /** "header" keeps the compact top-bar look; "block" fills a card/label row. */
+  /** "header" is the compact top-bar search; "block" is a labeled form field. */
   variant?: "header" | "block";
   label?: string;
   id?: string;
 }
 
 /**
- * Searchable city input: type any city → autocomplete → selection stores a
- * self-contained locationId. Coordinates flow through existing APIs to OpenWeather.
+ * Global location search: any city → autocomplete → selection stores a
+ * self-contained locationId. Coordinates flow through existing APIs internally.
  */
 export function LocationSearch({
   variant = "block",
@@ -27,6 +27,7 @@ export function LocationSearch({
   const [results, setResults] = useState<AppLocation[]>(LOCATIONS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [source, setSource] = useState<{ state: DataState; source: string } | null>(null);
   const [active, setActive] = useState(-1);
   const rootRef = useRef<HTMLDivElement>(null);
   const skipSearchRef = useRef(false);
@@ -55,6 +56,7 @@ export function LocationSearch({
       setResults(LOCATIONS);
       setLoading(false);
       setError(null);
+      setSource(null);
       setActive(-1);
       return;
     }
@@ -67,6 +69,7 @@ export function LocationSearch({
           if (cancelled) return;
           setResults(payload.results);
           setError(payload.error ?? null);
+          setSource({ state: payload.state, source: payload.source });
           setActive(-1);
           setLoading(false);
         })
@@ -74,6 +77,7 @@ export function LocationSearch({
           if (cancelled) return;
           setResults([]);
           setError("City search is unavailable right now.");
+          setSource(null);
           setActive(-1);
           setLoading(false);
         });
@@ -120,26 +124,29 @@ export function LocationSearch({
   };
 
   const listboxId = `${id}-listbox`;
-  const inputClass =
-    variant === "header"
-      ? "h-8 w-40 sm:w-64 bg-transparent border-none px-2 text-sm text-[#111111] placeholder:text-[#888888] focus:outline-none focus:ring-0"
-      : "mt-1.5 w-full h-10 px-3 text-sm border border-[#EAEAEA] rounded-md bg-white placeholder:text-[#888888] text-[#111111] focus:outline-none focus:border-[#111111] transition-colors";
 
   return (
-    <div
-      ref={rootRef}
-      className={`relative ${variant === "header" ? "hidden sm:block" : "block"}`}
-    >
+    <div ref={rootRef} className={`relative ${variant === "header" ? "w-full" : "block"}`}>
       {variant === "header" ? (
         <span className="sr-only">{label}</span>
       ) : (
-        <label htmlFor={id} className="text-xs font-semibold text-[#111111] uppercase tracking-[0.05em]">
+        <label
+          htmlFor={id}
+          className="block text-[13px] font-medium text-ink-2 mb-1.5"
+        >
           {label}
         </label>
       )}
-      <div className={variant === "header" ? "flex items-center gap-1.5 bg-black/5 hover:bg-black/10 rounded-md px-2 py-0.5 transition-colors" : ""}>
+
+      <div
+        className={
+          variant === "header"
+            ? "flex items-center gap-2 h-9 px-3 bg-surface border border-line rounded-lg transition-colors focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/12"
+            : ""
+        }
+      >
         {variant === "header" ? (
-          <Search className="w-3.5 h-3.5 text-[#666666] shrink-0" aria-hidden />
+          <Search className="w-3.5 h-3.5 text-ink-3 shrink-0" aria-hidden />
         ) : null}
         <input
           id={id}
@@ -151,7 +158,7 @@ export function LocationSearch({
           aria-activedescendant={active >= 0 && open ? `${id}-opt-${active}` : undefined}
           autoComplete="off"
           value={query}
-          placeholder="Search any city…"
+          placeholder={variant === "header" ? "Search any city…" : "Search any city…"}
           onChange={(e) => {
             setQuery(e.target.value);
             setOpen(true);
@@ -159,8 +166,15 @@ export function LocationSearch({
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
-          className={inputClass}
+          className={
+            variant === "header"
+              ? "flex-1 min-w-0 bg-transparent border-none text-sm text-ink placeholder:text-ink-3 focus:outline-none"
+              : "w-full h-9 px-3 text-sm text-ink bg-surface border border-line rounded-lg placeholder:text-ink-3 transition-colors focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/12"
+          }
         />
+        {variant === "header" && query === location.name ? (
+          <MapPin className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden aria-label="Current location" />
+        ) : null}
       </div>
 
       {open ? (
@@ -168,16 +182,16 @@ export function LocationSearch({
           id={listboxId}
           role="listbox"
           aria-label="City suggestions"
-          className="absolute left-0 right-0 z-40 mt-1 min-w-[240px] max-h-64 overflow-auto bg-white border border-[#EAEAEA] rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-1"
+          className="absolute left-0 right-0 z-40 mt-1.5 min-w-[260px] max-h-72 overflow-auto bg-surface border border-line rounded-xl shadow-[0_12px_40px_-12px_rgba(26,29,26,0.18)] p-1 fade-in"
         >
           {loading ? (
-            <p className="flex items-center gap-2 px-3 py-2 text-xs text-[#888888]">
+            <p className="flex items-center gap-2 px-3 py-2 text-xs text-ink-3">
               <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden />
               Searching cities…
             </p>
           ) : null}
           {!loading && results.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-[#888888]">No matching cities found.</p>
+            <p className="px-3 py-2 text-xs text-ink-3">No matching cities found.</p>
           ) : null}
           {!loading && results.length > 0
             ? results.map((loc, index) => (
@@ -189,16 +203,19 @@ export function LocationSearch({
                   aria-selected={index === active}
                   onClick={() => selectLocation(loc)}
                   onMouseEnter={() => setActive(index)}
-                  className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-md text-left text-sm transition-colors ${
-                    index === active
-                      ? "bg-black/5 text-[#111111]"
-                      : "text-[#444444] hover:bg-black/5 hover:text-[#111111]"
-                  } ${loc.id === location.id ? "font-semibold" : ""}`}
+                  className={`w-full flex items-start gap-2.5 px-3 py-2 rounded-lg text-left text-sm transition-colors ${
+                    index === active ? "bg-canvas-2 text-ink" : "text-ink-2 hover:bg-canvas-2"
+                  } ${loc.id === location.id ? "font-semibold text-ink" : ""}`}
                 >
-                  <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 opacity-40" aria-hidden />
+                  <MapPin
+                    className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${
+                      loc.id === location.id ? "text-accent" : "text-ink-3"
+                    }`}
+                    aria-hidden
+                  />
                   <span className="min-w-0">
                     <span className="block truncate leading-tight">{loc.name}</span>
-                    <span className="block truncate text-[11px] text-[#888888] mt-0.5">
+                    <span className="block truncate text-[11px] text-ink-3 mt-0.5 font-normal">
                       {loc.region ? `${loc.region} · ` : ""}
                       {loc.lat.toFixed(4)}, {loc.lon.toFixed(4)}
                     </span>
@@ -207,8 +224,13 @@ export function LocationSearch({
               ))
             : null}
           {error && !loading ? (
-            <p className="px-3 py-2 text-xs text-[#E5484D] bg-[#FAFAFA] rounded-md mt-1">
+            <p className="px-3 py-2 text-xs text-danger-2 bg-danger-soft rounded-lg m-1">
               {error}
+            </p>
+          ) : null}
+          {!loading && source && results.length > 0 ? (
+            <p className="px-3 py-1.5 text-[10px] text-ink-3 border-t border-line-2 mt-1">
+              {source.source} · {source.state === "live" ? "live geocoding" : "built-in list"}
             </p>
           ) : null}
         </div>

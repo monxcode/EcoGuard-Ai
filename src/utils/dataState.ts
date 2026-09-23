@@ -11,27 +11,27 @@ export const DATA_STATE_META: Record<
 > = {
   live: {
     label: "Live",
-    className: "bg-[#F5F9F6] text-[#2D7A54] border-[#DFF0E6]",
+    className: "bg-accent-soft text-accent-2 border-accent-line",
     title: "Fetched just now from a configured live provider",
   },
   demo: {
-    label: "Demo Data",
-    className: "bg-white text-[#888888] border-dashed border-[#CCCCCC]",
+    label: "Demo",
+    className: "bg-surface-2 text-ink-3 border-dashed border-[#cbc8bf]",
     title: "Deterministic demo fixture — not real-world live data",
   },
   historical: {
     label: "Historical",
-    className: "bg-[#FAFAFA] text-[#666666] border-[#EAEAEA]",
+    className: "bg-surface-2 text-ink-2 border-line",
     title: "Real past data from a provider",
   },
   estimated: {
     label: "Estimated",
-    className: "bg-[#F5F9FF] text-[#1D5DB5] border-[#DCE8F9]",
+    className: "bg-blue-soft text-blue-2 border-blue-line",
     title: "Derived estimate — not a direct measurement",
   },
   unavailable: {
     label: "Unavailable",
-    className: "bg-[#FFF4F2] text-[#C0492E] border-[#FCDED8]",
+    className: "bg-danger-soft text-danger-2 border-danger-line",
     title: "No provider configured and no demo fixture available",
   },
 };

@@ -3,15 +3,32 @@ import type { AgentRun } from "../../../shared/types";
 import { Card, CardHeader } from "../ui/Card";
 import { ConfidenceBar } from "../ui/ConfidenceBar";
 import { RiskPill } from "../ui/RiskPill";
+import { Chip } from "../ui/Button";
 
-function BulletList({ items }: { items: string[] }) {
+function BulletList({ items, tone = "accent" }: { items: string[]; tone?: "accent" | "plain" }) {
   if (items.length === 0) return null;
   return (
-    <ul className="space-y-1 text-sm text-slate-700 list-disc pl-4">
+    <ul className="space-y-1.5">
       {items.map((item, i) => (
-        <li key={i}>{item}</li>
+        <li key={i} className="flex gap-2 text-[13px] text-ink-2 leading-relaxed">
+          <span
+            className={`mt-[7px] w-1 h-1 rounded-full shrink-0 ${
+              tone === "accent" ? "bg-accent" : "bg-ink-3"
+            }`}
+            aria-hidden
+          />
+          <span>{item}</span>
+        </li>
       ))}
     </ul>
+  );
+}
+
+function ColumnLabel({ children }: { children: string }) {
+  return (
+    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-3 mb-2">
+      {children}
+    </p>
   );
 }
 
@@ -38,66 +55,61 @@ export function AgentResultCard({
               : undefined
         }
       />
-      <div className="px-5 pb-5 pt-1 space-y-4">
-        <p className="text-sm text-slate-700 leading-relaxed">{result.summary}</p>
+      <div className="px-5 pb-5 -mt-1 space-y-4">
+        <p className="text-[14px] text-ink-2 leading-relaxed">{result.summary}</p>
 
         {!unavailable ? <ConfidenceBar value={result.confidence} /> : null}
 
         <div>
-          <h3 className="text-xs font-semibold text-slate-500 mb-1.5">Recommended</h3>
+          <ColumnLabel>Recommended</ColumnLabel>
           {result.recommendations.length > 0 ? (
             <BulletList items={result.recommendations} />
           ) : (
-            <p className="text-xs text-slate-400">No recommendations.</p>
+            <p className="text-[13px] text-ink-3">No recommendations.</p>
           )}
         </div>
 
-        <details className="group border-t border-slate-100 pt-3">
-          <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-600 hover:text-slate-800">
+        <details className="group border-t border-line-2 pt-3">
+          <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-ink-2 hover:text-ink">
             <span>View analysis</span>
             <ChevronDown
-              className="w-3.5 h-3.5 transition-transform group-open:rotate-180"
+              className="w-3.5 h-3.5 transition-transform group-open:rotate-180 text-ink-3"
               aria-hidden
             />
           </summary>
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
             <div>
-              <h4 className="text-xs font-medium text-slate-500 mb-1.5">Possible factors</h4>
-              <BulletList items={result.factors} />
+              <ColumnLabel>Possible factors</ColumnLabel>
+              <BulletList items={result.factors} tone="plain" />
               {result.factors.length === 0 ? (
-                <p className="text-xs text-slate-400">No factors reported.</p>
+                <p className="text-xs text-ink-3">No factors reported.</p>
               ) : null}
             </div>
             <div>
-              <h4 className="text-xs font-medium text-slate-500 mb-1.5">Observed evidence</h4>
-              <BulletList items={result.evidence} />
+              <ColumnLabel>Observed evidence</ColumnLabel>
+              <BulletList items={result.evidence} tone="plain" />
               {result.evidence.length === 0 ? (
-                <p className="text-xs text-slate-400">No evidence available.</p>
+                <p className="text-xs text-ink-3">No evidence available.</p>
               ) : null}
             </div>
           </div>
         </details>
 
-        <details className="group border-t border-slate-100 pt-3" open={defaultOpenLimitations}>
-          <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-600 hover:text-slate-800">
+        <details className="group border-t border-line-2 pt-3" open={defaultOpenLimitations}>
+          <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-ink-2 hover:text-ink">
             <span>Sources &amp; limitations ({result.limitations.length})</span>
             <ChevronDown
-              className="w-3.5 h-3.5 transition-transform group-open:rotate-180"
+              className="w-3.5 h-3.5 transition-transform group-open:rotate-180 text-ink-3"
               aria-hidden
             />
           </summary>
           <div className="mt-3 space-y-3">
             <div className="flex flex-wrap gap-1.5">
               {result.dataSources.map((source) => (
-                <span
-                  key={source}
-                  className="px-2 py-0.5 text-[11px] bg-slate-50 text-slate-500 border border-slate-200 rounded"
-                >
-                  {source}
-                </span>
+                <Chip key={source}>{source}</Chip>
               ))}
             </div>
-            <ul className="space-y-1 text-xs text-slate-600 list-disc pl-4">
+            <ul className="space-y-1 text-xs text-ink-3 list-disc pl-4">
               {result.limitations.map((item, i) => (
                 <li key={i}>{item}</li>
               ))}
@@ -113,7 +125,7 @@ export function AgentResultCard({
 export function CompactAgentSummary({ run }: { run: AgentRun }) {
   return (
     <div className="flex items-start justify-between gap-3">
-      <p className="text-sm text-slate-600 line-clamp-3">{run.result.summary}</p>
+      <p className="text-sm text-ink-2 line-clamp-3">{run.result.summary}</p>
       <RiskPill level={run.result.riskLevel} size="sm" />
     </div>
   );

@@ -3,10 +3,10 @@ import { Bell, X } from "lucide-react";
 import type { AlertItem } from "../../../shared/types";
 import { api } from "../../services/api";
 import { useApp } from "../../context/AppContext";
-import { RISK_META } from "../../utils/risk";
+import { RiskPill } from "../ui/RiskPill";
 
 export function AlertsBell() {
-  const { settings } = useApp();
+  const { settings, location } = useApp();
   const [open, setOpen] = useState(false);
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -64,51 +64,54 @@ export function AlertsBell() {
         onClick={() => setOpen((v) => !v)}
         aria-label={`Alerts (${visible.length} active)`}
         aria-expanded={open}
-        className="relative inline-flex items-center justify-center w-8 h-8 rounded-md text-[#666666] hover:bg-black/5 transition-colors"
+        className="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-ink-2 hover:bg-black/5 transition-colors"
       >
         <Bell className="w-4 h-4" aria-hidden />
         {visible.length > 0 ? (
-          <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#E5484D] text-white text-[9px] font-bold flex items-center justify-center shadow-sm">
+          <span className="absolute top-1 right-1 min-w-4 h-4 px-1 rounded-full bg-danger text-white text-[9px] font-bold flex items-center justify-center shadow-sm">
             {visible.length}
           </span>
         ) : null}
       </button>
       {open ? (
-        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white border border-[#EAEAEA] rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] z-40 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#F0F0F0] bg-[#FAFAFA]/50">
-            <h2 className="text-xs font-semibold tracking-tight text-[#111111]">Environmental Alerts</h2>
+        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-surface border border-line rounded-xl shadow-[0_12px_40px_-12px_rgba(26,29,26,0.18)] z-40 overflow-hidden fade-in">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-line-2">
+            <div>
+              <h2 className="text-[13px] font-semibold text-ink">Environmental alerts</h2>
+              <p className="text-[11px] text-ink-3 mt-0.5">{location.name}</p>
+            </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close alerts"
-              className="text-[#888888] hover:text-[#111111] transition-colors"
+              className="text-ink-3 hover:text-ink transition-colors p-1 rounded-md hover:bg-black/5"
             >
               <X className="w-4 h-4" aria-hidden />
             </button>
           </div>
           <div className="max-h-80 overflow-y-auto p-2 space-y-1.5">
-            {loading ? <p className="text-xs text-[#666666] p-2 text-center">Loading alerts…</p> : null}
-            {error ? <p className="text-xs text-[#E5484D] p-2 text-center">{error}</p> : null}
+            {loading ? (
+              <p className="text-xs text-ink-3 p-3 text-center">Loading alerts…</p>
+            ) : null}
+            {error ? <p className="text-xs text-danger-2 p-3 text-center">{error}</p> : null}
             {!loading && !error && visible.length === 0 ? (
-              <p className="text-xs text-[#888888] p-4 text-center">
+              <p className="text-xs text-ink-3 p-4 text-center leading-relaxed">
                 No alerts at or above your selected severity for this location.
               </p>
             ) : null}
-            {visible.map((alert) => {
-              const meta = RISK_META[alert.severity];
-              return (
-                <div key={alert.id} className={`rounded-lg p-3 ${meta.pillClass} shadow-sm border`}>
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-[#111111]">{alert.title}</p>
-                    <span className="text-[10px] font-medium tracking-wide uppercase">{meta.label}</span>
-                  </div>
-                  <p className="mt-1.5 text-[11px] leading-relaxed text-[#444444]">{alert.message}</p>
+            {visible.map((alert) => (
+              <div key={alert.id} className="rounded-lg border border-line p-3 bg-surface">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-[13px] font-semibold text-ink leading-snug">{alert.title}</p>
+                  <RiskPill level={alert.severity} size="sm" className="shrink-0" />
                 </div>
-              );
-            })}
+                <p className="mt-1.5 text-xs leading-relaxed text-ink-2">{alert.message}</p>
+                <p className="mt-1.5 text-[10px] text-ink-3">{alert.agentName}</p>
+              </div>
+            ))}
           </div>
-          <div className="px-4 py-2 border-t border-[#F0F0F0] bg-[#FAFAFA] text-[10px] text-[#888888]">
-            Generated by EcoGuard AI
+          <div className="px-4 py-2 border-t border-line-2 bg-surface-2 text-[10px] text-ink-3">
+            Generated by EcoGuard AI — screening guidance, not official warnings
           </div>
         </div>
       ) : null}

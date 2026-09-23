@@ -21,19 +21,43 @@ export function StatTile({
   className?: string;
 }) {
   return (
-    <div className={`bg-white border border-[#EAEAEA] rounded-[14px] p-5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] ${className}`}>
+    <div className={`px-5 py-4 ${className}`}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs uppercase tracking-[0.04em] font-semibold text-[#666666]">{label}</p>
+        <p className="text-[11px] font-medium text-ink-3 tracking-wide uppercase">{label}</p>
         {dataState ? <DataStateBadge state={dataState} /> : null}
       </div>
-      <div className="mt-3 flex items-end gap-2">
-        {Icon ? <Icon className="w-5 h-5 text-[#888888] mb-1" aria-hidden /> : null}
-        <p className="text-3xl font-semibold text-[#111111] tabular-nums leading-none tracking-tight">
+      <div className="mt-2 flex items-end gap-2">
+        {Icon ? <Icon className="w-4 h-4 text-ink-3 mb-1.5" aria-hidden /> : null}
+        <p className="text-[26px] font-semibold text-ink tabular-nums leading-none tracking-[-0.02em]">
           {value}
-          {unit ? <span className="ml-1 text-sm font-medium text-[#888888]">{unit}</span> : null}
+          {unit ? <span className="ml-1 text-[13px] font-medium text-ink-3">{unit}</span> : null}
         </p>
       </div>
-      {sub ? <div className="mt-2.5 text-xs text-[#888888] font-medium">{sub}</div> : null}
+      {sub ? <div className="mt-1.5 text-xs text-ink-3">{sub}</div> : null}
+    </div>
+  );
+}
+
+/**
+ * A single panel of related metrics divided by hairlines — used instead of
+ * scattering every metric into its own card.
+ */
+export function MetricPanel({
+  children,
+  className = "",
+  columns = "grid-cols-2 sm:grid-cols-4",
+}: {
+  children: ReactNode;
+  className?: string;
+  columns?: string;
+}) {
+  return (
+    <div
+      className={`bg-surface border border-line rounded-xl shadow-[0_1px_2px_rgba(26,29,26,0.03)] overflow-hidden ${className}`}
+    >
+      <div className={`grid divide-y sm:divide-y-0 sm:divide-x divide-line ${columns}`}>
+        {children}
+      </div>
     </div>
   );
 }
