@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../services/api";
 import { useApp } from "../context/AppContext";
 
@@ -9,31 +9,34 @@ export interface ApiState<T> {
   reload: () => void;
 }
 
-/** Generic GET data hook with loading/error/retry states. Refetches when Demo Mode toggles. */
+interface Entry<T> {
+  key: string;
+  data: T | null;
+  error: string | null;
+  loading: boolean;
+}
+
+/**
+ * Generic GET data hook with loading/error/retry states.
+ * Refetches when the path (e.g. locationId query), Demo Mode, or reload changes.
+ * While a fetch for the current key has not completed, the hook reports
+ * `{ data: null, loading: true }` so previous-location data is never shown.
+ */
 export function useApi<T>(path: string | null): ApiState<T> {
   const { settings } = useApp();
   const { demoMode } = settings;
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(Boolean(path));
-  const [error, setError] = useState<string | null>(null);
   const [nonce, setNonce] = useState(0);
-  const mounted = useRef(true);
+  const key = path ? `${path}|${demoMode ? 1 : 0}|${nonce}` : "";
+  const [entry, setEntry] = useState<Entry<T>>({
+    key,
+    data: null,
+    error: null,
+    loading: Boolean(path),
+  });
 
   useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!path) {
-      setLoading(false);
-      return;
-    }
+    if (!path) return;
     let cancelled = false;
-    setLoading(true);
-    setError(null);
     fetch(path)
       .then(async (res) => {
         if (!res.ok) {
@@ -49,26 +52,27 @@ export function useApi<T>(path: string | null): ApiState<T> {
         return res.json();
       })
       .then((json: T) => {
-        if (!cancelled) {
-          setData(json);
-          setLoading(false);
-        }
+        if (!cancelled) setEntry({ key, data: json, error: null, loading: false });
       })
       .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Something went wrong.");
-          setLoading(false);
-        }
+        if (!cancelled)
+          setEntry({
+            key,
+            data: null,
+            error: err instanceof Error ? err.message : "Something went wrong.",
+            loading: false,
+          });
       });
     return () => {
       cancelled = true;
     };
-  }, [path, nonce, demoMode]);
+  }, [key, path]);
 
   const reload = useCallback(() => setNonce((n) => n + 1), []);
-  void mounted;
 
-  return { data, loading, error, reload };
+  if (!path) return { data: null, loading: false, error: null, reload };
+  if (entry.key !== key) return { data: null, loading: true, error: null, reload };
+  return { data: entry.data, loading: entry.loading, error: entry.error, reload };
 }
 
 /** Run an async action with pending/error state (for buttons and forms). */

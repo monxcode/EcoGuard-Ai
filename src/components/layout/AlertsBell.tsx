@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Bell, X } from "lucide-react";
 import type { AlertItem } from "../../../shared/types";
 import { api } from "../../services/api";
@@ -12,19 +12,39 @@ export function AlertsBell() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fetchedFor, setFetchedFor] = useState<string | null>(null);
+  const locIdRef = useRef(settings.locationId);
+
+  useEffect(() => {
+    if (locIdRef.current === settings.locationId) return;
+    locIdRef.current = settings.locationId;
+    setAlerts([]);
+    setFetchedFor(null);
+    setError(null);
+    setLoading(false);
+  }, [settings.locationId]);
 
   useEffect(() => {
     if (!open || fetchedFor === settings.locationId || !settings.alertsEnabled) return;
+    let cancelled = false;
     setLoading(true);
     setError(null);
     api
       .getAlerts(settings.locationId)
       .then((res) => {
+        if (cancelled) return;
         setAlerts(res.alerts);
         setFetchedFor(settings.locationId);
       })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Failed to load alerts"))
-      .finally(() => setLoading(false));
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Failed to load alerts");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [open, fetchedFor, settings.locationId, settings.alertsEnabled]);
 
   if (!settings.alertsEnabled) return null;

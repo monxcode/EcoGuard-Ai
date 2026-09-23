@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Calculator, MapPin } from "lucide-react";
 import type { RouteComparisonPayload, RouteOption } from "../../shared/types";
 import { useApp } from "../context/AppContext";
@@ -28,6 +28,16 @@ export default function RoutePage() {
   const [comparison, setComparison] = useState<RouteComparisonPayload | null>(null);
   const [pending, setPending] = useState(false);
   const [compareError, setCompareError] = useState<string | null>(null);
+  const locIdRef = useRef(settings.locationId);
+
+  useEffect(() => {
+    if (locIdRef.current === settings.locationId) return;
+    locIdRef.current = settings.locationId;
+    setSelected([]);
+    setComparison(null);
+    setCompareError(null);
+    setPending(false);
+  }, [settings.locationId]);
 
   const toggle = (id: string) => {
     setComparison(null);
@@ -42,15 +52,18 @@ export default function RoutePage() {
       setCompareError("Select at least two routes to compare.");
       return;
     }
+    const forLocation = settings.locationId;
     setPending(true);
     setCompareError(null);
     try {
-      const result = await api.compareRoutes(settings.locationId, selected);
+      const result = await api.compareRoutes(forLocation, selected);
+      if (locIdRef.current !== forLocation) return;
       setComparison(result);
     } catch (err) {
+      if (locIdRef.current !== forLocation) return;
       setCompareError(err instanceof ApiClientError ? err.message : "Comparison failed.");
     } finally {
-      setPending(false);
+      if (locIdRef.current === forLocation) setPending(false);
     }
   };
 

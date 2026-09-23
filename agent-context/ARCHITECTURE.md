@@ -65,7 +65,8 @@ src/               # React client (Vite)
 ├── pages/         # route-level pages (Dashboard, Air, Climate, Disaster, Water,
 │                  #   Waste, Route, Assistant, Reports, Demo, Settings, DataSources, NotFound)
 ├── services/      # api.ts — typed fetch client for every /api route
-├── hooks/         # useApi (GET with loading/error/retry), useAction
+├── hooks/         # useApi (GET with loading/error/retry; on path/Demo change reports
+│                  #   loading with no stale data until the new response lands), useAction
 └── utils/         # format, risk-level metadata, dataState metadata, math
 
 server/            # Express API (bundled to dist/server.js via esbuild)

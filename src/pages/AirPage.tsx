@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Brain, Database, Loader2, Sparkles, TriangleAlert } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useApi } from "../hooks/useApi";
@@ -26,19 +26,31 @@ export default function AirPage() {
   const [analysis, setAnalysis] = useState<PollutionAnalysisPayload | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const locIdRef = useRef(settings.locationId);
+
+  useEffect(() => {
+    if (locIdRef.current === settings.locationId) return;
+    locIdRef.current = settings.locationId;
+    setAnalysis(null);
+    setAnalysisError(null);
+    setAnalysisLoading(false);
+  }, [settings.locationId]);
 
   const runAnalysis = async () => {
+    const forLocation = settings.locationId;
     setAnalysisLoading(true);
     setAnalysisError(null);
     try {
-      const result = await api.getAirAnalysis(settings.locationId);
+      const result = await api.getAirAnalysis(forLocation);
+      if (locIdRef.current !== forLocation) return;
       setAnalysis(result);
     } catch (err) {
+      if (locIdRef.current !== forLocation) return;
       setAnalysisError(
         err instanceof ApiClientError ? err.message : "Failed to run pollution analysis.",
       );
     } finally {
-      setAnalysisLoading(false);
+      if (locIdRef.current === forLocation) setAnalysisLoading(false);
     }
   };
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Database, FileText, Lightbulb, Plus, Printer } from "lucide-react";
 import type { EnvironmentalReport } from "../../shared/types";
 import { useApp } from "../context/AppContext";
@@ -25,24 +25,36 @@ export default function ReportsPage() {
   const [report, setReport] = useState<EnvironmentalReport | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const locIdRef = useRef(settings.locationId);
+
+  useEffect(() => {
+    if (locIdRef.current === settings.locationId) return;
+    locIdRef.current = settings.locationId;
+    setReport(null);
+    setError(null);
+    setPending(false);
+  }, [settings.locationId]);
 
   const toggleInclude = (id: string) =>
     setInclude((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const generate = async () => {
+    const forLocation = settings.locationId;
     setPending(true);
     setError(null);
     try {
       const result = await api.generateReport({
-        locationId: settings.locationId,
+        locationId: forLocation,
         title: title.trim() || undefined,
         include,
       });
+      if (locIdRef.current !== forLocation) return;
       setReport(result);
     } catch (err) {
+      if (locIdRef.current !== forLocation) return;
       setError(err instanceof ApiClientError ? err.message : "Report generation failed.");
     } finally {
-      setPending(false);
+      if (locIdRef.current === forLocation) setPending(false);
     }
   };
 

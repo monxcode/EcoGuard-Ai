@@ -34,6 +34,10 @@
 19. Weather data fidelity vs OpenWeather — ✅ provider precision preserved (no pre-rounding),
     city-local "Last updated" via provider timezone offset, and the request endpoint + selected
     coords + provider-returned city/grid coords shown in the UI for debugging
+20. Instant location switching — ✅ `useApi` reports loading (never the previous city's data)
+    the moment `locationId` changes and refetches automatically; page-local results (pollution
+    analysis, route comparison, generated report, bell alerts) reset on location change with
+    in-flight guards — regression-tested in `src/hooks/useApi.test.tsx`
 
 **Hard rule:** do not sacrifice a working P0 feature to add multiple unfinished P2 features.
 If time runs short, a smaller set of fully-working P0/P1 features beats a broad set of
