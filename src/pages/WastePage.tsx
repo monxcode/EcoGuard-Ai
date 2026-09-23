@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import {
   BatteryCharging,
+  ChevronDown,
   Cpu,
   FileText,
   Leaf,
@@ -125,11 +126,7 @@ export default function WastePage() {
         {/* Input side */}
         <div className="space-y-4">
           <Card>
-            <CardHeader
-              title="Demo samples"
-              subtitle="Pre-set examples that work with zero API keys"
-              action={<DataStateBadge state="demo" />}
-            />
+            <CardHeader title="Demo samples" action={<DataStateBadge state="demo" />} />
             <CardBody className="pt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
               {samples.map((sample) => {
                 const Icon = CATEGORY_ICONS[sample.category];
@@ -162,7 +159,7 @@ export default function WastePage() {
           </Card>
 
           <Card>
-            <CardHeader title="Or upload an image" subtitle="png, jpeg, webp or gif — max 4 MB" />
+            <CardHeader title="Or upload an image" subtitle="png, jpeg, webp · max 4 MB" />
             <CardBody className="pt-2 space-y-3">
               <input
                 ref={fileRef}
@@ -214,7 +211,7 @@ export default function WastePage() {
               <CardBody>
                 <div className="text-center py-10 text-sm text-slate-500">
                   <Recycle className="w-8 h-8 mx-auto text-slate-300 mb-2" aria-hidden />
-                  Classification results will appear here — pick a demo sample or upload an image.
+                  Pick a demo sample or upload an image to see classification results.
                 </div>
               </CardBody>
             </Card>
@@ -223,13 +220,12 @@ export default function WastePage() {
               <Card className={result.category === "hazardous" ? "border-red-300" : ""}>
                 <CardHeader
                   title={result.isDemo ? "Demo Classification" : "AI Classification"}
-                  subtitle={result.agentRun.agentName}
                   action={
                     <span
-                      className={`px-2 py-0.5 text-[11px] font-medium rounded-full border ${
+                      className={`px-1.5 py-px text-[10px] font-medium rounded-full border ${
                         result.usedGemini
                           ? "bg-violet-50 border-violet-200 text-violet-700"
-                          : "bg-white border-dashed border-slate-400 text-slate-600"
+                          : "bg-white border-dashed border-slate-400 text-slate-500"
                       }`}
                     >
                       {result.usedGemini ? "Gemini vision" : "Deterministic demo"}
@@ -243,9 +239,8 @@ export default function WastePage() {
                       <div>
                         <p className="text-sm font-semibold text-red-900">Potentially hazardous</p>
                         <p className="text-xs text-red-800 mt-0.5">
-                          Cautious guidance is shown below. Do not place hazardous material in
-                          household recycling or general waste. When classification is uncertain,
-                          we default to the safest handling advice.
+                          Do not place hazardous material in household recycling or general waste.
+                          When uncertain, we default to the safest handling advice.
                         </p>
                       </div>
                     </div>
@@ -262,15 +257,15 @@ export default function WastePage() {
                     })()}
                     <div>
                       <p className="text-lg font-semibold text-slate-900 leading-tight">{result.label}</p>
-                      <p className="text-xs text-slate-500 uppercase tracking-wide">{result.category}</p>
+                      <p className="text-xs text-slate-500 capitalize">{result.category}</p>
                     </div>
                   </div>
 
                   <ConfidenceBar value={result.confidence} />
 
                   <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
-                      Disposal & recycling guidance
+                    <h3 className="text-xs font-medium text-slate-500 mb-1.5">
+                      Disposal &amp; recycling guidance
                     </h3>
                     <ul className="space-y-1.5 text-sm text-slate-700 list-disc pl-4">
                       {result.disposalGuidance.map((g) => (
@@ -279,23 +274,33 @@ export default function WastePage() {
                     </ul>
                   </div>
 
-                  <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
-                      Environmental impact
-                    </h3>
-                    <p className="text-sm text-slate-700 leading-relaxed">{result.environmentalImpact}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
-                      Limitations
-                    </h3>
-                    <ul className="space-y-1 text-xs text-slate-600 list-disc pl-4">
-                      {result.limitations.map((l) => (
-                        <li key={l}>{l}</li>
-                      ))}
-                    </ul>
-                  </div>
+                  <details className="group border-t border-slate-100 pt-3">
+                    <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-600 hover:text-slate-800">
+                      <span>View details</span>
+                      <ChevronDown
+                        className="w-3.5 h-3.5 transition-transform group-open:rotate-180"
+                        aria-hidden
+                      />
+                    </summary>
+                    <div className="mt-3 space-y-3">
+                      <div>
+                        <h4 className="text-xs font-medium text-slate-500 mb-1">
+                          Environmental impact
+                        </h4>
+                        <p className="text-sm text-slate-700 leading-relaxed">
+                          {result.environmentalImpact}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-medium text-slate-500 mb-1">Limitations</h4>
+                        <ul className="space-y-1 text-xs text-slate-600 list-disc pl-4">
+                          {result.limitations.map((l) => (
+                            <li key={l}>{l}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </details>
                 </CardBody>
               </Card>
 

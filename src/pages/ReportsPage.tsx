@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Database, FileText, Lightbulb, Plus, Printer } from "lucide-react";
+import { FileText, Plus, Printer } from "lucide-react";
 import type { EnvironmentalReport } from "../../shared/types";
 import { useApp } from "../context/AppContext";
 import { api, ApiClientError } from "../services/api";
@@ -64,7 +64,7 @@ export default function ReportsPage() {
         <div className="flex flex-wrap items-center justify-between gap-3 no-print">
           <PageHeader
             title="Report generated"
-            subtitle="Observed data, AI interpretation and recommendations are kept separate."
+            subtitle="Observed data, AI interpretation and recommendations kept separate."
           />
           <div className="flex gap-2">
             <button
@@ -117,10 +117,7 @@ export default function ReportsPage() {
               <CardHeader title={section.title} />
               <CardBody className="pt-2 grid gap-4 lg:grid-cols-3">
                 <div className="border-l-4 border-slate-400 bg-slate-50 rounded-r-lg p-3">
-                  <h3 className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-2">
-                    <Database className="w-3.5 h-3.5" aria-hidden />
-                    Observed data
-                  </h3>
+                  <h3 className="text-xs font-medium text-slate-600 mb-2">Observed data</h3>
                   <ul className="space-y-1 text-sm text-slate-700 list-disc pl-4">
                     {section.observed.map((item, i) => (
                       <li key={i}>{item}</li>
@@ -129,10 +126,7 @@ export default function ReportsPage() {
                   </ul>
                 </div>
                 <div className="border-l-4 border-violet-400 bg-violet-50/70 rounded-r-lg p-3">
-                  <h3 className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-violet-700 mb-2">
-                    <Lightbulb className="w-3.5 h-3.5" aria-hidden />
-                    AI interpretation
-                  </h3>
+                  <h3 className="text-xs font-medium text-violet-700 mb-2">AI interpretation</h3>
                   <ul className="space-y-1 text-sm text-slate-700 list-disc pl-4">
                     {section.interpretation.map((item, i) => (
                       <li key={i}>{item}</li>
@@ -141,10 +135,7 @@ export default function ReportsPage() {
                   </ul>
                 </div>
                 <div className="border-l-4 border-emerald-500 bg-emerald-50/70 rounded-r-lg p-3">
-                  <h3 className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-800 mb-2">
-                    <FileText className="w-3.5 h-3.5" aria-hidden />
-                    Recommendations
-                  </h3>
+                  <h3 className="text-xs font-medium text-emerald-800 mb-2">Recommendations</h3>
                   <ul className="space-y-1 text-sm text-slate-700 list-disc pl-4">
                     {section.recommendations.map((item, i) => (
                       <li key={i}>{item}</li>
@@ -267,9 +258,9 @@ export default function ReportsPage() {
 
       <Card className="p-4">
         <p className="text-sm text-slate-600">
-          A report combines all domain agents' output for the location. It always separates{" "}
-          <strong>observed data</strong> from <strong>AI interpretation</strong> and{" "}
-          <strong>recommendations</strong>, and lists data sources and limitations per section.
+          Combines all domain agents' output for the location — always separating{" "}
+          <strong>observed data</strong>, <strong>AI interpretation</strong> and{" "}
+          <strong>recommendations</strong>, with sources and limitations per section.
         </p>
       </Card>
     </div>

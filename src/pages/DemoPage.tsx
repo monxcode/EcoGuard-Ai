@@ -82,15 +82,14 @@ export default function DemoPage() {
       <Card className="border-emerald-200 bg-emerald-50 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
-            <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-emerald-900">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-emerald-900">
               <TestTube className="w-4 h-4" aria-hidden />
               Guided {data.durationMinutes}-minute walkthrough
             </h2>
             <p className="mt-1 text-sm text-emerald-900/80">
-              Works with zero external API keys. Starts by forcing deterministic demo fixtures on
-              the server, then walks through overview → AQI → pollution analysis → heat →
-              multi-agent analysis → assistant → recommendation → overall risk → report. Every
-              screen is clearly labeled “Demo Data”.
+              Works with zero API keys. Forces demo fixtures on the server, then walks through
+              overview → AQI → analysis → heat → multi-agent → assistant → report. Every screen is
+              clearly labeled “Demo Data”.
             </p>
           </div>
           {!started ? (
@@ -169,9 +168,7 @@ export default function DemoPage() {
             />
             <CardBody className="pt-2 space-y-4">
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
-                  Talking points
-                </h3>
+                <h3 className="text-xs font-medium text-slate-500 mb-2">Talking points</h3>
                 <ul className="space-y-2">
                   {step.talkingPoints.map((point, i) => (
                     <li key={i} className="flex gap-2 text-sm text-slate-700">
@@ -216,9 +213,8 @@ export default function DemoPage() {
         <Card>
           <CardBody>
             <p className="text-sm text-slate-600">
-              Press <strong>Start demo</strong> to enable demo mode and begin the guided
-              walkthrough. You can leave demo mode any time from Settings — the app works with no
-              API keys configured.
+              Press <strong>Start demo</strong> to enable demo mode and begin the walkthrough. You
+              can leave demo mode any time from Settings — no API keys required.
             </p>
           </CardBody>
         </Card>

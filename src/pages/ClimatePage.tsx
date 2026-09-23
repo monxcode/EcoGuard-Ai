@@ -1,4 +1,3 @@
-import { Cloud, Droplet, Gauge, Thermometer, Wind } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useApi } from "../hooks/useApi";
 import type { ClimatePayload } from "../../shared/types";
@@ -41,7 +40,7 @@ export default function ClimatePage() {
     <div className="space-y-6">
       <PageHeader
         title="Climate & Heat Intelligence"
-        subtitle={`${data.location.name}, ${data.location.region} (${data.location.lat}, ${data.location.lon}) — HeatShield assessment`}
+        subtitle={`${data.location.name}, ${data.location.region} — HeatShield assessment`}
         actions={
           <div className="flex items-center gap-2">
             <DataStateBadge state={data.states.weather} />
@@ -52,13 +51,11 @@ export default function ClimatePage() {
 
       {/* Current conditions strip */}
       <Card className="p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
           <div className="flex items-center gap-3">
-            <WeatherGlyph className="w-7 h-7 text-sky-600" aria-hidden />
+            <WeatherGlyph className="w-6 h-6 text-sky-600" aria-hidden />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Current conditions
-              </p>
+              <p className="text-[11px] font-medium text-slate-400">Current conditions</p>
               <p className="text-sm font-medium text-slate-800 capitalize">
                 {weather
                   ? (weather.weatherDescription ?? weather.weatherCondition ?? "Observed")
@@ -66,46 +63,42 @@ export default function ClimatePage() {
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-slate-600">
-            <span className="inline-flex items-center gap-1.5">
-              <Thermometer className="w-4 h-4 text-slate-400" aria-hidden />
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
+            <span>
+              <span className="text-xs text-slate-400">Temp </span>
               {weather ? formatTempFull(weather.temperature, settings.units) : "—"}
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Droplet className="w-4 h-4 text-slate-400" aria-hidden />
+            <span>
+              <span className="text-xs text-slate-400">Humidity </span>
               {weather ? `${weather.humidity}%` : "—"}
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Wind className="w-4 h-4 text-slate-400" aria-hidden />
+            <span>
+              <span className="text-xs text-slate-400">Wind </span>
               {weather ? formatWind(weather.windSpeed, settings.units) : "—"}
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Gauge className="w-4 h-4 text-slate-400" aria-hidden />
+            <span>
+              <span className="text-xs text-slate-400">Pressure </span>
               {weather?.pressure !== null && weather?.pressure !== undefined
                 ? `${weather.pressure} hPa`
                 : "—"}
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Cloud className="w-4 h-4 text-slate-400" aria-hidden />
+            <span>
+              <span className="text-xs text-slate-400">Cloud </span>
               {weather?.cloudiness !== null && weather?.cloudiness !== undefined
                 ? `${weather.cloudiness}%`
                 : "—"}
             </span>
-            <span className="text-xs text-slate-400">
-              {data.sources.weather} · observed{" "}
-              {formatTimeInOffset(weather?.timestamp, weather?.timezoneOffset)}{" "}
-              {formatUtcOffset(weather?.timezoneOffset)}
-            </span>
           </div>
         </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          Observed {formatTimeInOffset(weather?.timestamp, weather?.timezoneOffset)}{" "}
+          {formatUtcOffset(weather?.timezoneOffset)} · {data.sources.weather}
+        </p>
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Temperature</p>
-            <Thermometer className="w-4 h-4 text-slate-400" aria-hidden />
-          </div>
+          <p className="text-xs font-medium text-slate-500">Temperature</p>
           <p className="mt-2 text-3xl font-semibold tabular-nums text-slate-900">
             {weather ? formatTempFull(weather.temperature, settings.units) : "—"}
           </p>
@@ -118,19 +111,16 @@ export default function ClimatePage() {
         </Card>
         <Card className="p-4">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Heat index</p>
+            <p className="text-xs font-medium text-slate-500">Heat index</p>
             <RiskPill level={heatRun?.result.riskLevel ?? "unknown"} size="sm" />
           </div>
           <p className="mt-2 text-3xl font-semibold tabular-nums text-slate-900">
             {hi !== null ? `${hi}°C` : "—"}
           </p>
-          <p className="mt-1 text-xs text-slate-500">Computed from temperature + humidity</p>
+          <p className="mt-1 text-xs text-slate-500">Temperature + humidity estimate</p>
         </Card>
         <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Humidity</p>
-            <Droplet className="w-4 h-4 text-slate-400" aria-hidden />
-          </div>
+          <p className="text-xs font-medium text-slate-500">Humidity</p>
           <p className="mt-2 text-3xl font-semibold tabular-nums text-slate-900">
             {weather ? `${weather.humidity}%` : "—"}
           </p>
@@ -139,13 +129,10 @@ export default function ClimatePage() {
           </p>
         </Card>
         <Card className="p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Hot spell</p>
-            <Wind className="w-4 h-4 text-slate-400" aria-hidden />
-          </div>
+          <p className="text-xs font-medium text-slate-500">Hot spell</p>
           <p className="mt-2 text-3xl font-semibold tabular-nums text-slate-900">{hotDays}d</p>
           <p className="mt-1 text-xs text-slate-500">
-            Forecast days ≥ 36 °C (screening indicator, not an official heatwave declaration)
+            Forecast days ≥ 36 °C · screening only
           </p>
         </Card>
       </div>
@@ -153,8 +140,7 @@ export default function ClimatePage() {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader
-            title="Weather Forecast — temperature (7 days)"
-            subtitle="Forecast daily highs and lows"
+            title="7-day temperature forecast"
             action={<DataStateBadge state={data.states.forecast} />}
           />
           <CardBody className="pt-2">

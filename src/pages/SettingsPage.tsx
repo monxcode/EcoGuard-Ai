@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Bell, FlaskConical, MapPin, Ruler, TestTube } from "lucide-react";
 import { useApp, type AlertSeverity, type Units } from "../context/AppContext";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Card, CardBody, CardHeader } from "../components/ui/Card";
@@ -55,10 +54,7 @@ export default function SettingsPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader
-            title="Units"
-            icon={<Ruler className="w-4 h-4 text-slate-400" aria-hidden />}
-          />
+          <CardHeader title="Units" />
           <CardBody className="pt-2 space-y-2">
             {(
               [
@@ -88,10 +84,7 @@ export default function SettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader
-            title="Default location"
-            icon={<MapPin className="w-4 h-4 text-slate-400" aria-hidden />}
-          />
+          <CardHeader title="Default location" />
           <CardBody className="pt-2">
             <LocationSearch
               variant="block"
@@ -99,7 +92,8 @@ export default function SettingsPage() {
               id="settings-location"
             />
             <p className="mt-2 text-xs text-slate-500">
-              Used as the starting location the next time you open the app. Search any city — results come from OpenWeather Geocoding.
+              Starting location next time you open the app. Search any city — results come from
+              OpenWeather Geocoding.
             </p>
           </CardBody>
         </Card>
@@ -107,7 +101,6 @@ export default function SettingsPage() {
         <Card>
           <CardHeader
             title="Data & demo mode"
-            icon={<TestTube className="w-4 h-4 text-slate-400" aria-hidden />}
             action={<DataStateBadge state={settings.demoMode ? "demo" : health ? (health.preferredProvider === "live" ? "live" : "demo") : "demo"} />}
           />
           <CardBody className="pt-2 space-y-4">
@@ -115,8 +108,7 @@ export default function SettingsPage() {
               <div>
                 <p className="text-sm font-medium text-slate-800">Force demo mode</p>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Makes every provider serve deterministic demo fixtures — ideal for presentations
-                  with zero API keys.
+                  Every provider serves deterministic demo fixtures — works with zero API keys.
                 </p>
               </div>
               <Toggle
@@ -143,16 +135,13 @@ export default function SettingsPage() {
         </Card>
 
         <Card>
-          <CardHeader
-            title="Alerts"
-            icon={<Bell className="w-4 h-4 text-slate-400" aria-hidden />}
-          />
+          <CardHeader title="Alerts" />
           <CardBody className="pt-2 space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-slate-800">In-app alerts</p>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Show a bell notification when agents detect elevated environmental risk.
+                  Notify when agents detect elevated environmental risk.
                 </p>
               </div>
               <Toggle
@@ -184,19 +173,16 @@ export default function SettingsPage() {
       </div>
 
       <Card>
-        <CardHeader
-          title="About"
-          icon={<FlaskConical className="w-4 h-4 text-slate-400" aria-hidden />}
-        />
+        <CardHeader title="About" />
         <CardBody className="pt-2 text-sm text-slate-600 space-y-1">
           <p>
             <strong>EcoGuard AI</strong> — AI-powered environmental & climate intelligence for
             Clean Air & Climate Resilience.
           </p>
           <p className="text-xs text-slate-500">
-            React + Vite + Tailwind + Recharts · Express + TypeScript · Google Gemini (server-side)
-            · multi-agent orchestration. Demo data is always labeled; live data only appears when a
-            provider is configured.
+            React · Vite · Tailwind · Recharts · Express · server-side Gemini · multi-agent
+            orchestration. Demo data is always labeled; live data appears only when a provider is
+            configured.
           </p>
         </CardBody>
       </Card>

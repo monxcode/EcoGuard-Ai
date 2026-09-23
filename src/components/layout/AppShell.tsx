@@ -70,12 +70,12 @@ function ModeBanner() {
   }
   return (
     <div
-      className="bg-emerald-50 text-emerald-800 border-b border-emerald-200 text-center text-xs font-semibold tracking-wide py-1.5 px-4 flex items-center justify-center gap-2"
+      className="bg-white text-slate-500 border-b border-slate-200 text-center text-[11px] py-1.5 px-4 flex items-center justify-center gap-1.5"
       role="status"
     >
       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden />
-      LIVE MODE — real provider data
-      <Link to="/settings" className="underline text-emerald-700 hover:text-emerald-900 font-normal">
+      Live provider data
+      <Link to="/settings" className="underline hover:text-slate-800">
         manage
       </Link>
     </div>
@@ -194,9 +194,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
             <LocationSearch variant="header" label="Search location" id="header-location" />
             <div className="flex-1" />
-            <span className="hidden md:block">
-              <DataStateBadge state={dataModeState} />
-            </span>
             <AlertsBell />
           </header>
 

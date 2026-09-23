@@ -1,4 +1,4 @@
-import { Database, KeyRound } from "lucide-react";
+import { KeyRound } from "lucide-react";
 import type { DataSourcesPayload } from "../../shared/types";
 import { useApi } from "../hooks/useApi";
 import { PageHeader } from "../components/ui/PageHeader";
@@ -17,12 +17,12 @@ export default function DataSourcesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Data Sources"
-        subtitle="Where every number on this app comes from — and whether it is live, demo, estimated or unavailable"
+        subtitle="Where every number comes from — and whether it is live, demo, estimated or unavailable"
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Global demo mode</p>
+          <p className="text-xs font-medium text-slate-500">Global demo mode</p>
           <div className="mt-2">
             <DataStateBadge state={data.globalDemoMode ? "demo" : data.preferredProvider === "live" ? "live" : "demo"} />
           </div>
@@ -33,7 +33,7 @@ export default function DataSourcesPage() {
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Gemini AI</p>
+          <p className="text-xs font-medium text-slate-500">Gemini AI</p>
           <div className="mt-2">
             <DataStateBadge state={data.geminiConfigured ? "live" : "unavailable"} />
           </div>
@@ -44,7 +44,7 @@ export default function DataSourcesPage() {
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Key policy</p>
+          <p className="text-xs font-medium text-slate-500">Key policy</p>
           <div className="mt-2 flex items-center gap-1.5 text-sm text-slate-700">
             <KeyRound className="w-4 h-4 text-slate-400" aria-hidden />
             Server-side only
@@ -57,14 +57,11 @@ export default function DataSourcesPage() {
       </div>
 
       <Card>
-        <CardHeader
-          title="Provider status by domain"
-          icon={<Database className="w-4 h-4 text-slate-400" aria-hidden />}
-        />
+        <CardHeader title="Provider status by domain" />
         <CardBody className="pt-2 overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-slate-500 border-b border-slate-200">
+              <tr className="text-left text-xs font-medium text-slate-500 border-b border-slate-200">
                 <th className="py-2 pr-4 font-semibold">Domain</th>
                 <th className="py-2 pr-4 font-semibold">Provider</th>
                 <th className="py-2 pr-4 font-semibold">State</th>
@@ -89,12 +86,10 @@ export default function DataSourcesPage() {
 
       <Card className="p-4">
         <p className="text-sm text-slate-600">
-          To move a domain to live data, configure the matching server-side environment variables
-          (see <code className="text-xs bg-slate-100 px-1 rounded">.env.example</code>) and set{" "}
-          <code className="text-xs bg-slate-100 px-1 rounded">DATA_PROVIDER=live</code>. If a live
-          call fails, that domain shows <strong>Unavailable</strong> instead of silently switching
-          to demo data — turn Demo Mode on explicitly (Settings or Demo page) when you want
-          fixtures.
+          To move a domain to live data, set the matching server-side environment variables (see{" "}
+          <code className="text-xs bg-slate-100 px-1 rounded">.env.example</code>) and{" "}
+          <code className="text-xs bg-slate-100 px-1 rounded">DATA_PROVIDER=live</code>. A failed
+          live call shows <strong>Unavailable</strong> instead of silently switching to demo data.
         </p>
       </Card>
     </div>

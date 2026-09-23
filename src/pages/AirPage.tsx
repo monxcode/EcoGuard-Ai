@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Brain, Database, Loader2, Sparkles, TriangleAlert } from "lucide-react";
+import { ChevronDown, Loader2, Sparkles } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useApi } from "../hooks/useApi";
 import { api, ApiClientError } from "../services/api";
@@ -12,7 +12,7 @@ import { RiskPill } from "../components/ui/RiskPill";
 import { ConfidenceBar } from "../components/ui/ConfidenceBar";
 import { EmptyState, ErrorState, InlineError, PageSkeleton } from "../components/ui/states";
 import { AgentResultCard } from "../components/agents/AgentResultCard";
-import { AqiPmTrendChart, DailyAqiBarChart, PollutantRatioChart } from "../components/charts/Charts";
+import { AqiPmTrendChart, DailyAqiBarChart } from "../components/charts/Charts";
 
 function ratioBarPct(ratio: number): number {
   return Math.min(100, Math.round((ratio / 2) * 100));
@@ -80,7 +80,7 @@ export default function AirPage() {
       {/* AQI hero + pollutant tiles */}
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current AQI (US scale)</p>
+          <p className="text-xs font-medium text-slate-500">Current AQI · US scale</p>
           {air && category ? (
             <>
               <p className="mt-2 text-6xl font-semibold tabular-nums text-slate-900 leading-none">
@@ -101,7 +101,7 @@ export default function AirPage() {
         </Card>
 
         <Card className="lg:col-span-2">
-          <CardHeader title="Pollutants vs health guidelines" subtitle="Ratio to the relevant guideline reference" />
+          <CardHeader title="Pollutants vs health guidelines" />
           <CardBody className="grid gap-3 sm:grid-cols-2 pt-2">
             {data.pollutants.map((p) => (
               <div key={p.key} className="border border-slate-200 rounded-lg p-3">
@@ -149,22 +149,12 @@ export default function AirPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader title="Pollutant comparison" subtitle="Each pollutant as a multiple of its guideline" />
-          <CardBody className="pt-2">
-            <PollutantRatioChart
-              data={data.pollutants.map((p) => ({ label: p.label, ratio: p.ratio }))}
-            />
-          </CardBody>
-        </Card>
-
-        {/* Why is AQI changing? */}
-        <Card>
-          <CardHeader
-            title="Why is AQI changing?"
-            subtitle="Pollution Source Detective — observed data vs AI interpretation"
-            action={
+      {/* Why is AQI changing? */}
+      <Card>
+        <CardHeader
+          title="Why is AQI changing?"
+          subtitle="Observed data vs AI interpretation"
+          action={
               <button
                 type="button"
                 onClick={runAnalysis}
@@ -185,73 +175,67 @@ export default function AirPage() {
               <LoadingAnalysis />
             ) : analysisError ? (
               <InlineError message={analysisError} />
-            ) : !analysis ? (
-              <EmptyState
-                title="Analysis not run yet"
-                description="Run the analysis to see possible contributing factors to the observed AQI change — strictly hedged, evidence-linked interpretation."
-              />
-            ) : (
-              <>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-2 py-0.5 text-[11px] font-medium border border-slate-300 bg-white text-slate-600 rounded-full">
-                    Observed data
-                  </span>
-                  <span className="px-2 py-0.5 text-[11px] font-medium border border-violet-200 bg-violet-50 text-violet-700 rounded-full">
-                    AI interpretation {analysis.usedGemini ? "(Gemini)" : "(rules-based)"}
-                  </span>
-                  <span className="text-[11px] text-slate-400">hedged language only</span>
-                </div>
-
-                <div>
-                  <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
-                    <Database className="w-3.5 h-3.5" aria-hidden />
-                    Observed data
-                  </h3>
-                  <ul className="space-y-1.5 text-sm text-slate-700 list-disc pl-4">
-                    {analysis.observed.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
-                    <Brain className="w-3.5 h-3.5" aria-hidden />
-                    Interpretation (possible contributors — not confirmed causes)
-                  </h3>
-                  <ul className="space-y-1.5 text-sm text-slate-700 list-disc pl-4">
-                    {analysis.interpretation.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <ConfidenceBar value={analysis.confidence} />
-
-                <div className="flex flex-wrap gap-1.5">
-                  {analysis.dataSources.map((s) => (
-                    <span key={s} className="px-2 py-0.5 text-[11px] bg-slate-100 border border-slate-200 rounded text-slate-600">
-                      {s}
+              ) : !analysis ? (
+                <EmptyState
+                  title="Analysis not run yet"
+                  description="Run the analysis to see possible contributing factors — hedged, evidence-linked interpretation."
+                />
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2 py-0.5 text-[11px] font-medium border border-slate-300 bg-white text-slate-600 rounded-full">
+                      Observed data
                     </span>
-                  ))}
-                </div>
+                    <span className="px-2 py-0.5 text-[11px] font-medium border border-violet-200 bg-violet-50 text-violet-700 rounded-full">
+                      AI interpretation {analysis.usedGemini ? "(Gemini)" : "(rules-based)"}
+                    </span>
+                  </div>
 
-                <details className="group">
-                  <summary className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-slate-500">
-                    <TriangleAlert className="w-3.5 h-3.5" aria-hidden />
-                    Limitations ({analysis.limitations.length})
-                  </summary>
-                  <ul className="mt-2 text-xs text-slate-600 list-disc pl-4 space-y-1">
-                    {analysis.limitations.map((item) => (
-                      <li key={item}>{item}</li>
+                  <div>
+                    <h3 className="text-xs font-medium text-slate-500 mb-1.5">Observed</h3>
+                    <ul className="space-y-1.5 text-sm text-slate-700 list-disc pl-4">
+                      {analysis.observed.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xs font-medium text-slate-500 mb-1.5">
+                      Possible contributors — not confirmed causes
+                    </h3>
+                    <ul className="space-y-1.5 text-sm text-slate-700 list-disc pl-4">
+                      {analysis.interpretation.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <ConfidenceBar value={analysis.confidence} />
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {analysis.dataSources.map((s) => (
+                      <span key={s} className="px-2 py-0.5 text-[11px] bg-slate-100 border border-slate-200 rounded text-slate-600">
+                        {s}
+                      </span>
                     ))}
-                  </ul>
-                </details>
-              </>
-            )}
+                  </div>
+
+                  <details className="group border-t border-slate-100 pt-3">
+                    <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-600 hover:text-slate-800">
+                      <span>Limitations ({analysis.limitations.length})</span>
+                      <ChevronDown className="w-3.5 h-3.5 transition-transform group-open:rotate-180" aria-hidden />
+                    </summary>
+                    <ul className="mt-2 text-xs text-slate-600 list-disc pl-4 space-y-1">
+                      {analysis.limitations.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </details>
+                </>
+              )}
           </CardBody>
         </Card>
-      </div>
 
       {/* Full agent result */}
       <AgentResultCard run={data.agentRun} />

@@ -46,7 +46,7 @@ export default function WaterPage() {
           unit="mm"
           icon={CloudRain}
           dataState={data.rainfallHistory.state}
-          sub={past14.length > 0 ? "Observed demo history" : "History not configured for live mode"}
+          sub={past14.length > 0 ? "Observed history" : "Not configured for live mode"}
         />
         <StatTile
           label="7-day forecast rain"
@@ -54,21 +54,21 @@ export default function WaterPage() {
           unit="mm"
           icon={Droplets}
           dataState={data.states.forecast}
-          sub="Forecast total for the coming week"
+          sub="Coming week"
         />
         <StatTile
           label="Temperature"
           value={data.weather ? formatTempFull(data.weather.temperature, settings.units) : "—"}
           icon={Thermometer}
           dataState={data.states.weather}
-          sub="Evaporative demand context"
+          sub="Current conditions"
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader
-            title="Rainfall history (14 days)"
+            title="Rainfall history · 14 days"
             action={<DataStateBadge state={data.rainfallHistory.state} />}
           />
           <CardBody className="pt-2">
@@ -77,7 +77,7 @@ export default function WaterPage() {
         </Card>
         <Card>
           <CardHeader
-            title="Rainfall outlook (7 days)"
+            title="Rainfall outlook · 7 days"
             action={<DataStateBadge state={data.states.forecast} />}
           />
           <CardBody className="pt-2">

@@ -77,25 +77,20 @@ export default function RoutePage() {
     <div className="space-y-6">
       <PageHeader
         title="Green Route"
-        subtitle={`${data.location.name} — compare routes by estimated environmental exposure`}
+        subtitle={`${data.location.name} — compare routes by estimated exposure`}
         actions={<DataStateBadge state="estimated" />}
       />
 
       <Card className="border-sky-200 bg-sky-50 p-4">
         <p className="text-sm text-sky-900">
-          <strong className="font-semibold">Exposure values are estimates.</strong> Routing provider
-          is not configured, so route options are demo fixtures and exposure is derived from
-          area-level AQI × duration × green-cover adjustment — never a measured dose. EcoGuard does
-          not declare a route "safer" unless the estimated difference exceeds its 10% noise band.
+          <strong className="font-semibold">Exposure values are estimates</strong> — area AQI ×
+          duration × green-cover adjustment, never a measured dose. A route is only called safer
+          when the estimated difference exceeds its 10% noise band.
         </p>
       </Card>
 
       <Card>
-        <CardHeader
-          title="Select routes to compare"
-          subtitle="Pick 2–3 routes"
-          action={<DataStateBadge state="demo" />}
-        />
+        <CardHeader title="Select routes to compare" subtitle="Pick 2–3 routes" />
         <CardBody className="pt-2 grid gap-3 sm:grid-cols-3">
           {data.routes.map((route) => {
             const active = selected.includes(route.id);

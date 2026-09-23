@@ -20,23 +20,18 @@ export function CardHeader({
   title,
   subtitle,
   action,
-  icon,
 }: {
   title: string;
   subtitle?: string;
   action?: ReactNode;
-  icon?: ReactNode;
 }) {
   return (
     <div className="flex items-start justify-between gap-3 px-5 pt-4 pb-1">
       <div className="min-w-0">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700 uppercase tracking-wide">
-          {icon}
-          {title}
-        </h2>
-        {subtitle ? <p className="mt-1 text-sm text-slate-500">{subtitle}</p> : null}
+        <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+        {subtitle ? <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p> : null}
       </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
+      {action ? <div className="shrink-0 flex items-center gap-1.5">{action}</div> : null}
     </div>
   );
 }

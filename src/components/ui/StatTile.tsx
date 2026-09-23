@@ -23,7 +23,7 @@ export function StatTile({
   return (
     <div className={`bg-white border border-slate-200 rounded-xl p-4 shadow-sm ${className}`}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+        <p className="text-xs font-medium text-slate-500">{label}</p>
         {dataState ? <DataStateBadge state={dataState} /> : null}
       </div>
       <div className="mt-2 flex items-end gap-1.5">

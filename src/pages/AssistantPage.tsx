@@ -1,12 +1,11 @@
 import { useRef, useState, useEffect } from "react";
-import { Bot, Send, Sparkles, Trash2, User } from "lucide-react";
+import { Bot, ChevronDown, Send, Sparkles, Trash2, User } from "lucide-react";
 import type { AssistantResponse } from "../../shared/types";
 import { useApp } from "../context/AppContext";
 import { api, ApiClientError } from "../services/api";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Card } from "../components/ui/Card";
 import { ConfidenceBar } from "../components/ui/ConfidenceBar";
-import { DataStateBadge } from "../components/ui/DataStateBadge";
 import { InlineError } from "../components/ui/states";
 import { RiskPill } from "../components/ui/RiskPill";
 
@@ -90,8 +89,8 @@ export default function AssistantPage() {
                 Ask about your environment
               </h2>
               <p className="mt-1 text-xs text-slate-500 max-w-md">
-                EcoGuard routes your question to only the relevant agents, gathers data, and replies
-                with evidence, sources and a clear "agents used" list — no hidden chain-of-thought.
+                Answers use the same agents and data as your dashboard — with sources and an
+                "agents used" list, no hidden chain-of-thought.
               </p>
               <div className="mt-4 flex flex-wrap justify-center gap-2">
                 {SUGGESTIONS.map((s) => (
@@ -189,65 +188,69 @@ function AssistantMessage({ payload }: { payload: AssistantResponse }) {
       <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">{payload.reply}</p>
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-          Agents used:
-        </span>
-        {domainRuns.map((run) => (
-          <span
-            key={run.agentId}
-            className="px-2 py-0.5 text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full"
-          >
-            {run.agentName}
-          </span>
-        ))}
-        <span className="px-2 py-0.5 text-[11px] bg-slate-100 text-slate-600 border border-slate-200 rounded-full">
-          Risk Analyst
-        </span>
-        <span className="px-2 py-0.5 text-[11px] bg-white border-dashed border-slate-400 text-slate-600 rounded-full">
-          {payload.usedGemini ? "Gemini" : "Rules-based"}
-        </span>
-        <span className="text-[11px] text-slate-400">intent: {payload.intent}</span>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-          Evidence:
-        </span>
-        {payload.evidence.slice(0, 4).map((item) => (
-          <span key={item} className="px-2 py-0.5 text-[11px] bg-slate-100 text-slate-600 border border-slate-200 rounded">
-            {item.length > 90 ? `${item.slice(0, 90)}…` : item}
-          </span>
-        ))}
-        {payload.evidence.length === 0 ? (
-          <span className="text-[11px] text-slate-400">none returned</span>
-        ) : null}
-      </div>
-
-      <div className="flex flex-wrap gap-1.5">
-        {payload.dataSources.slice(0, 6).map((src) => (
-          <span key={src} className="px-2 py-0.5 text-[10px] bg-slate-50 text-slate-500 border border-slate-200 rounded">
-            {src}
-          </span>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3">
         {overall ? <RiskPill level={overall.result.riskLevel} size="sm" /> : null}
-        <div className="w-40">
+        <div className="w-36">
           <ConfidenceBar value={payload.confidence} />
         </div>
-        <DataStateBadge state="demo" />
+        <span className="text-[11px] text-slate-400">
+          {domainRuns.map((r) => r.agentName).join(", ")}
+          {domainRuns.length > 0 ? " · " : ""}Risk Analyst ·{" "}
+          {payload.usedGemini ? "Gemini" : "Rules-based"}
+        </span>
       </div>
 
-      <details className="group">
-        <summary className="cursor-pointer text-[11px] font-medium text-slate-500">
-          Limitations & reasoning summary ({payload.limitations.length})
+      <details className="group border-t border-slate-100 pt-2">
+        <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-600 hover:text-slate-800">
+          <span>Evidence & sources</span>
+          <ChevronDown
+            className="w-3.5 h-3.5 transition-transform group-open:rotate-180"
+            aria-hidden
+          />
         </summary>
-        <ul className="mt-1 text-[11px] text-slate-600 list-disc pl-4 space-y-0.5">
+        <div className="mt-2 space-y-2">
+          <div className="flex flex-wrap gap-1.5">
+            {payload.evidence.slice(0, 4).map((item) => (
+              <span
+                key={item}
+                className="px-2 py-0.5 text-[11px] bg-slate-100 text-slate-600 border border-slate-200 rounded"
+              >
+                {item.length > 90 ? `${item.slice(0, 90)}…` : item}
+              </span>
+            ))}
+            {payload.evidence.length === 0 ? (
+              <span className="text-[11px] text-slate-400">none returned</span>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {payload.dataSources.slice(0, 6).map((src) => (
+              <span
+                key={src}
+                className="px-2 py-0.5 text-[10px] bg-slate-50 text-slate-500 border border-slate-200 rounded"
+              >
+                {src}
+              </span>
+            ))}
+          </div>
+          <p className="text-[11px] text-slate-400">Intent: {payload.intent}</p>
+        </div>
+      </details>
+
+      <details className="group border-t border-slate-100 pt-2">
+        <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-600 hover:text-slate-800">
+          <span>Limitations ({payload.limitations.length})</span>
+          <ChevronDown
+            className="w-3.5 h-3.5 transition-transform group-open:rotate-180"
+            aria-hidden
+          />
+        </summary>
+        <ul className="mt-2 text-xs text-slate-600 list-disc pl-4 space-y-1">
           {payload.limitations.map((l) => (
             <li key={l}>{l}</li>
           ))}
-          <li>Assessment based on structured agent summaries — full model deliberation is never shown.</li>
+          <li>
+            Assessment based on structured agent summaries — full model deliberation is never
+            shown.
+          </li>
         </ul>
       </details>
     </div>

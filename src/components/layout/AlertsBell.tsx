@@ -99,7 +99,7 @@ export function AlertsBell() {
               return (
                 <div key={alert.id} className={`rounded-lg border p-3 ${meta.pillClass}`}>
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-semibold uppercase tracking-wide">{alert.title}</p>
+                    <p className="text-xs font-semibold text-slate-800">{alert.title}</p>
                     <span className="text-[10px] font-medium">severity: {meta.label}</span>
                   </div>
                   <p className="mt-1 text-xs leading-relaxed text-slate-700">{alert.message}</p>

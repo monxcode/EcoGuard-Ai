@@ -6,9 +6,9 @@ export function DataStateBadge({ state, className = "" }: { state: DataState; cl
   return (
     <span
       title={meta.title}
-      className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium border rounded-full ${meta.className} ${className}`}
+      className={`inline-flex items-center gap-1 px-1.5 py-px text-[10px] font-medium border rounded-full ${meta.className} ${className}`}
     >
-      {state === "live" ? <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden /> : null}
+      {state === "live" ? <span className="w-1 h-1 rounded-full bg-emerald-500" aria-hidden /> : null}
       {meta.label}
     </span>
   );
