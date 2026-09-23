@@ -174,13 +174,19 @@ function Brand() {
   );
 }
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarContent({
+  onNavigate,
+  showMode,
+}: {
+  onNavigate?: () => void;
+  showMode: boolean;
+}) {
   return (
     <>
       <Brand />
       <SidebarNav onNavigate={onNavigate} />
       <div className="px-3 pb-4 mt-auto">
-        <ModeIndicator />
+        {showMode ? <ModeIndicator /> : null}
       </div>
     </>
   );
@@ -189,6 +195,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { pathname } = useLocation();
+  // The Dashboard renders its own single data-state indicator (derived from
+  // the actual feed states); the shell mode chip would be a duplicate LIVE/DEMO
+  // tag there, so it is only shown on the other routes.
+  const showMode = pathname !== "/dashboard";
 
   return (
     <div className="app-shell h-dvh flex bg-canvas font-sans text-ink overflow-hidden">
@@ -201,7 +211,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Desktop sidebar */}
       <aside className="app-sidebar hidden lg:flex w-[240px] shrink-0 flex-col border-r border-line bg-canvas-2 no-print">
-        <SidebarContent />
+        <SidebarContent showMode={showMode} />
       </aside>
 
       {/* Mobile drawer */}
@@ -225,7 +235,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <X className="w-5 h-5" aria-hidden />
               </button>
             </div>
-            <SidebarContent onNavigate={() => setMobileOpen(false)} />
+            <SidebarContent onNavigate={() => setMobileOpen(false)} showMode={showMode} />
           </div>
         </div>
       ) : null}
@@ -246,9 +256,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <div className="flex-1 hidden sm:block" />
           <div className="flex items-center gap-2 shrink-0">
-            <span className="lg:hidden">
-              <ModeChip />
-            </span>
+            {showMode ? (
+              <span className="lg:hidden">
+                <ModeChip />
+              </span>
+            ) : null}
             <AlertsBell />
           </div>
         </header>
