@@ -6,27 +6,27 @@
 
 ## Priority tiers
 
-**P0 — must work for the hackathon submission to be viable:**
-1. Main Dashboard (ClimatePulse combined view)
-2. Air Quality Intelligence
-3. Multi-agent orchestration (Orchestrator selectively invoking agents)
-4. AI Environmental Assistant
-5. Climate/Heat Intelligence (HeatShield)
-6. Demo Mode
-7. Clear live/demo data separation, everywhere data is shown
+**P0 — must work for the hackathon submission to be viable:** ✅ all built
+1. Main Dashboard (ClimatePulse combined view) — ✅ `/dashboard`
+2. Air Quality Intelligence — ✅ `/air` (+ pollution analysis)
+3. Multi-agent orchestration (Orchestrator selectively invoking agents) — ✅ `server/agents/orchestrator.ts` + routing tests
+4. AI Environmental Assistant — ✅ `/assistant`
+5. Climate/Heat Intelligence (HeatShield) — ✅ `/climate`
+6. Demo Mode — ✅ `/demo` guided walkthrough + `DEMO_MODE`/`DATA_PROVIDER` env + runtime toggle
+7. Clear live/demo data separation, everywhere data is shown — ✅ `DataStateBadge` + `DATA_STATE_META` on every widget
 
-**P1 — high value, build after P0 is solid:**
-8. Flood Intelligence (FloodSense)
-9. Wildfire Intelligence (WildfireWatch)
-10. Water Intelligence (WaterGuard)
-11. Reports
-12. Alerts
+**P1 — high value, build after P0 is solid:** ✅ all built
+8. Flood Intelligence (FloodSense) — ✅ `/disaster`
+9. Wildfire Intelligence (WildfireWatch) — ✅ `/disaster`
+10. Water Intelligence (WaterGuard) — ✅ `/water`
+11. Reports — ✅ `/reports`
+12. Alerts — ✅ in-app bell + `/api/alerts` (severity threshold configurable in Settings)
 
-**P2 — additional, only after P0 and P1 are working:**
-13. Waste Intelligence (WasteWise)
-14. Green Route
-15. Advanced city intelligence (EcoCity AI)
-16. Advanced analytics
+**P2 — additional, only after P0 and P1 are working:** ✅ all built
+13. Waste Intelligence (WasteWise) — ✅ `/waste` (demo samples + upload, canned hazardous guidance)
+14. Green Route — ✅ `/route` (alias `/routes`), estimated exposure with noise band
+15. Advanced city intelligence (EcoCity AI) — covered as the dashboard `city-risk` intent (domain risk overview), not a separate page
+16. Advanced analytics — not built (intentionally out of scope; no half-finished analytics UI)
 
 **Hard rule:** do not sacrifice a working P0 feature to add multiple unfinished P2 features.
 If time runs short, a smaller set of fully-working P0/P1 features beats a broad set of

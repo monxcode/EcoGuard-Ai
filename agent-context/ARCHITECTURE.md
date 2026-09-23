@@ -44,36 +44,54 @@ network hops, queues, or separate processes between agents unless a specific tas
 `src/` (React) components. React talks to the Express API, never directly to Gemini or external
 environmental data providers. See [RULES.md](./RULES.md) § Security.
 
-## Suggested project structure
+## Actual project structure (as implemented)
 
 ```
-src/
-├── app/            # app shell, routing, providers
-├── components/     # shared/presentational UI components
-├── features/       # feature-scoped UI (e.g. air-quality, assistant, reports)
-├── pages/          # route-level pages (Dashboard, Air Intelligence, ...)
-├── agents/         # (optional) client-side types/adapters mirroring server agent contracts
-├── services/       # API client wrappers (fetch calls to /server routes)
-├── hooks/          # React hooks (data fetching, UI state)
-├── types/          # shared TS types (mirrors server/schemas where relevant)
-├── utils/          # formatting, risk-level → color mapping, etc.
-├── data/           # static reference data (e.g. AQI breakpoints, demo fixtures)
-└── lib/            # small generic helpers
+shared/            # contracts imported by BOTH server and client
+├── types.ts       # AgentResult, payload types, data states
+├── aqi.ts         # AQI categories, heat index, breakpoint helpers
+└── locations.ts   # selectable locations + defaults
 
-server/
-├── agents/         # orchestrator + one module per agent (see AGENTS.md)
-├── tools/          # external API clients: air quality, weather, geocoding, Gemini, etc.
-├── routes/         # Express route handlers
-├── services/       # cross-cutting services (demo-mode data, caching, report generation)
-├── middleware/      # error handling, validation, rate limiting
-├── schemas/        # Zod schemas for agent output + API request/response validation
-└── utils/          # shared server utilities
+src/               # React client (Vite)
+├── App.tsx        # lazy-loaded route table inside AppShell
+├── main.tsx       # bootstrap: BrowserRouter + AppProvider
+├── context/       # AppContext (settings in localStorage, health sync)
+├── components/
+│   ├── ui/        # Card, PageHeader, DataStateBadge, RiskPill, StatTile, ConfidenceBar, states
+│   ├── charts/    # Recharts wrappers (AQI trend, rainfall, exposure, ...)
+│   ├── layout/    # AppShell (sidebar/topbar/location select), AlertsBell
+│   ├── agents/    # AgentResultCard (uniform agent-output rendering)
+│   └── dashboard/ # DashboardView
+├── pages/         # route-level pages (Dashboard, Air, Climate, Disaster, Water,
+│                  #   Waste, Route, Assistant, Reports, Demo, Settings, DataSources, NotFound)
+├── services/      # api.ts — typed fetch client for every /api route
+├── hooks/         # useApi (GET with loading/error/retry), useAction
+└── utils/         # format, risk-level metadata, dataState metadata, math
 
-agent-context/       # this directory — permanent context for AI coding agents
+server/            # Express API (bundled to dist/server.js via esbuild)
+├── index.ts       # app wiring; serves dist/ SPA in production
+├── config/        # env.ts (PORT, DATA_PROVIDER, DEMO_MODE, GEMINI_*)
+├── agents/        # orchestrator + 12 agent modules + vitest suites
+├── tools/         # providers.ts (demo + Open-Meteo live + cache/fallback),
+│                  #   demoFixtures, demoState, gemini, wasteClassifier, noise
+├── routes/        # meta, dashboard, intelligence, assistant, waste, greenRoutes, reports
+├── services/      # alerts, demoScenario
+├── middleware/    # errorHandler (ApiError, Zod, asyncRoute)
+└── schemas/       # zod: agent output + API request validation
+
+agent-context/     # this directory — permanent context for AI coding agents
 ```
 
-This is guidance, not a contract. If a task genuinely requires a different structure, make the
-change deliberately and update this file in the same change — don't let it drift silently.
+Notes on deliberate deviations from the earlier suggestion above:
+- Shared contracts live in `shared/` (not `src/types/`) because the server and client both
+  import them; server Zod schemas conform to these types.
+- No `src/features/` or `src/app/` — routing lives in `App.tsx`, the shell in
+  `components/layout/AppShell.tsx`; the feature set didn't justify another layer.
+- No database: settings persist in `localStorage`; demo toggle and fixtures are in-memory
+  server state (per ARCHITECTURE.md § Database policy — don't add one "for completeness").
+
+If a task genuinely requires a different structure, make the change deliberately and update
+this file in the same change — don't let it drift silently.
 
 ## Technology stack
 

@@ -94,13 +94,14 @@ integration status. Keep the actual current status accurate here as providers ge
 
 | Domain | Status | Notes |
 |---|---|---|
-| Air quality | _(update as implemented)_ | |
-| Weather | _(update as implemented)_ | |
-| Flood | _(update as implemented)_ | |
-| Wildfire | _(update as implemented)_ | |
-| Water stress | _(update as implemented)_ | |
-| Waste (Gemini vision) | _(update as implemented)_ | |
-| Routing/geospatial | _(update as implemented)_ | |
+| Air quality | **Live-capable** (default: Demo) | Open-Meteo Air Quality (`us_aqi`, keyless) when `DATA_PROVIDER=live`; falls back to demo fixtures per-domain on failure. Default config serves Demo. |
+| Weather | **Live-capable** (default: Demo) | Open-Meteo Forecast (keyless) — shared substrate for Heat/Flood/Wildfire/Water. Default: Demo. |
+| Flood | **Derived** (rainfall/forecast only) | No river/water-level or terrain feed — screening capped at `high`, limitation always disclosed. Inputs follow the weather row's live/demo state. |
+| Wildfire | **Derived** (weather proxies) | No vegetation or historical fire-incident feed — temperature/humidity/wind/rainfall proxy only, disclosed in `limitations`. |
+| Water stress | **Derived** (rainfall history + forecast) | 14-day rainfall history uses demo fixtures whenever demo is preferred (incl. default `DATA_PROVIDER=demo`); `unavailable` only when live is preferred (no live history source configured). No reservoir/drought feed. |
+| Waste (Gemini vision) | **Demo** without key; **Live** with `GEMINI_API_KEY` | Image bytes go server-side only. Hazardous/e-waste guidance always comes from the canned safe list, never model output. |
+| Routing/geospatial | **Demo fixtures** | No routing provider configured — route options are fixtures; exposure is always labeled **ESTIMATED** with a 10% inconclusive noise band. |
+| AI reasoning (advisory/interpretation) | **Demo/rules-based** without key; **Live** with `GEMINI_API_KEY` | Server-side Gemini only; output schema-validated (Zod). Without a key, deterministic rules-based phrasing is used and labeled. |
 
 ## Source attribution requirements
 
