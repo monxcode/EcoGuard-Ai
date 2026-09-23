@@ -1,0 +1,1030 @@
+You are now the primary coding agent for this repository.
+
+The `agent-context/` directory has already been created and contains the project's permanent AI context.
+
+Your task is now to BUILD THE ACTUAL EcoGuard AI APPLICATION.
+
+Do not create another planning-only response.
+
+Inspect the repository, read the context files, make an implementation plan internally, and then start implementing the project.
+
+==================================================
+STEP 1 — READ PROJECT CONTEXT FIRST
+===================================
+
+Before changing any code, read:
+
+agent-context/PROJECT.md
+agent-context/ARCHITECTURE.md
+agent-context/AGENTS.md
+agent-context/RULES.md
+agent-context/DATA-SOURCES.md
+agent-context/UI-UX.md
+agent-context/TASKS.md
+
+These files are the source of truth for the project.
+
+Do not ignore them.
+
+If there is a conflict between the existing repository and the context files:
+
+1. Inspect the existing implementation.
+2. Preserve working functionality where possible.
+3. Follow the project context for the intended architecture.
+4. Make the smallest reasonable change.
+5. Update the relevant context file if the architecture genuinely changes.
+
+==================================================
+PROJECT
+=======
+
+Project:
+
+EcoGuard AI
+
+Repository:
+
+ecoguard-ai
+
+Type:
+
+AI-powered Environmental & Climate Intelligence Platform
+
+Hackathon theme:
+
+Clean Air & Climate Resilience
+
+Core objective:
+
+Build one unified environmental intelligence platform that combines environmental data, specialized AI agents, risk analysis and actionable recommendations.
+
+The application should eventually help a user understand:
+
+* current air quality
+* pollution patterns
+* heat risk
+* flood risk
+* wildfire risk
+* water stress
+* waste
+* environmental exposure
+* overall climate/environmental risk
+
+The system should also provide:
+
+* AI environmental assistant
+* alerts
+* reports
+* environmental recommendations
+* evidence/source information
+* multi-agent analysis
+
+==================================================
+IMPORTANT BUILD PRINCIPLE
+=========================
+
+Build a REAL working application.
+
+Do not create a static mockup that only looks good.
+
+The application must have:
+
+* working navigation
+* working pages
+* working components
+* working state management where needed
+* working charts
+* working demo mode
+* working AI architecture
+* working API/service abstraction
+* proper error handling
+* responsive UI
+* production build
+
+Where live external APIs are not configured yet, create clean service interfaces and deterministic Demo Mode.
+
+Do NOT fabricate live data.
+
+Demo data must always be visibly labeled as demo data.
+
+==================================================
+TECH STACK
+==========
+
+Use the project's preferred stack unless the existing repository already has a compatible implementation.
+
+Frontend:
+
+* React
+* Vite
+* TypeScript
+* Tailwind CSS
+* Recharts
+* Lucide React
+
+Backend:
+
+* Node.js
+* Express
+* TypeScript
+
+AI:
+
+* Google Gemini
+* Use the current official Google GenAI SDK/API approach available at implementation time.
+* Keep Gemini calls server-side.
+* Never expose API keys to the browser.
+
+Database:
+
+* Supabase/Postgres only where useful.
+* Do not introduce unnecessary database complexity.
+
+==================================================
+BUILD ORDER
+===========
+
+Implement in phases.
+
+Do not attempt to build every advanced feature at once.
+
+PHASE 1 — FOUNDATION
+
+First establish:
+
+* project structure
+* frontend
+* backend
+* TypeScript configuration
+* Tailwind
+* routing
+* shared types
+* API/service layer
+* environment configuration
+* error handling
+* reusable UI components
+
+Create:
+
+`.env.example`
+
+Never create or commit real secrets.
+
+==================================================
+PHASE 2 — CORE UI
+=================
+
+Build the main application shell.
+
+Include:
+
+* responsive sidebar/navigation
+* top bar
+* location selector
+* environment status
+* notification/alert area
+* main content area
+* responsive mobile navigation
+
+Pages/routes should include at minimum:
+
+/dashboard
+/air
+/climate
+/disaster
+/water
+/waste
+/route
+/assistant
+/reports
+/settings
+/demo
+
+Use clean routing.
+
+Every page should have a useful empty/loading/error state.
+
+Do not leave placeholder pages saying only "Coming Soon".
+
+If a feature is not fully implemented yet, provide a functional foundation and clearly communicate its current status.
+
+==================================================
+PHASE 3 — DESIGN SYSTEM
+=======================
+
+Create a premium environmental intelligence dashboard.
+
+Visual direction:
+
+* modern
+* clean
+* premium
+* trustworthy
+* data-driven
+* minimal
+* professional
+
+Avoid:
+
+* cyberpunk
+* excessive neon
+* gaming aesthetics
+* excessive glassmorphism
+* excessive gradients
+* visual clutter
+
+Use:
+
+* clear cards
+* strong typography hierarchy
+* charts
+* subtle borders
+* meaningful status indicators
+* clean spacing
+* responsive layouts
+
+Use Lucide icons.
+
+Do not use emoji as interface icons.
+
+Make the UI feel like a real environmental intelligence product rather than a generic admin dashboard.
+
+==================================================
+PHASE 4 — DASHBOARD
+===================
+
+Build the main Dashboard.
+
+The dashboard should provide an environmental overview for the selected location.
+
+Include:
+
+1. AQI overview
+2. PM2.5
+3. PM10
+4. temperature
+5. humidity
+6. heat risk
+7. environmental risk overview
+8. alerts
+9. trends
+10. AI summary
+11. data source information
+
+Create useful visualizations using Recharts.
+
+Examples:
+
+* AQI trend chart
+* temperature trend
+* risk overview
+* pollutant breakdown
+
+Use demo data initially if live data is unavailable.
+
+Clearly display:
+
+DEMO DATA
+
+when demo data is being used.
+
+==================================================
+PHASE 5 — AIR QUALITY INTELLIGENCE
+==================================
+
+Create a dedicated Air Intelligence page.
+
+Include:
+
+* AQI
+* PM2.5
+* PM10
+* NO2
+* O3
+* CO
+* SO2
+* historical chart
+* pollutant comparison
+* risk level
+* trend
+* recommendations
+* source information
+
+Add:
+
+"Why is AQI changing?"
+
+This should use the Pollution Analysis Agent when AI is available.
+
+The analysis must distinguish:
+
+Observed data
+from
+AI interpretation
+
+Do not make unsupported causal claims.
+
+==================================================
+PHASE 6 — MULTI-AGENT ARCHITECTURE
+==================================
+
+Implement a modular agent system.
+
+Create appropriate TypeScript interfaces.
+
+Conceptually:
+
+Agent
+AgentContext
+AgentResult
+AgentTool
+AgentRegistry
+Orchestrator
+
+Implement these agents:
+
+1. Environmental Orchestrator
+2. Air Quality Agent
+3. Pollution Analysis Agent
+4. Weather Agent
+5. Heat Risk Agent
+6. Flood Risk Agent
+7. Wildfire Risk Agent
+8. Water Stress Agent
+9. Waste Intelligence Agent
+10. Green Route Agent
+11. Risk Analyst Agent
+12. Environmental Advisory Agent
+
+Do NOT make each agent an unnecessarily complex autonomous AI.
+
+Use a practical architecture:
+
+Data/tool retrieval
+→ structured agent processing
+→ Gemini reasoning where appropriate
+→ validated structured result
+
+Each agent should have a clear responsibility.
+
+==================================================
+STANDARD AGENT RESULT
+=====================
+
+Use a consistent result structure such as:
+
+{
+status,
+riskLevel,
+confidence,
+summary,
+factors,
+evidence,
+recommendations,
+dataSources,
+limitations
+}
+
+Use strong TypeScript types.
+
+Validate AI-generated structured output.
+
+Do not blindly trust arbitrary model output.
+
+==================================================
+AGENT ORCHESTRATION
+===================
+
+The Environmental Orchestrator should determine which agents are needed.
+
+Example:
+
+User asks:
+
+"Can I go running this evening?"
+
+Orchestrator should potentially use:
+
+Air Quality Agent
+Weather Agent
+Heat Risk Agent
+Risk Analyst Agent
+Environmental Advisory Agent
+
+It should NOT invoke every environmental agent.
+
+Another example:
+
+"Why is pollution increasing?"
+
+Use:
+
+Air Quality Agent
+Weather Agent
+Pollution Analysis Agent
+
+Another example:
+
+"Is my city at environmental risk?"
+
+Potentially use:
+
+Air
+Heat
+Flood
+Wildfire
+Water
+Risk Analyst
+
+Create a clean orchestration abstraction so new agents can be added later.
+
+==================================================
+PHASE 7 — AI ENVIRONMENTAL ASSISTANT
+====================================
+
+Build `/assistant`.
+
+The user should be able to ask natural-language environmental questions.
+
+Examples:
+
+"Is it safe to go outside today?"
+
+"Why is the AQI high?"
+
+"Should I run this evening?"
+
+"Is there heat risk today?"
+
+"What environmental risks should I watch?"
+
+The assistant should:
+
+1. understand the query
+2. identify relevant agents
+3. obtain relevant data
+4. analyze the data
+5. generate a concise response
+6. show relevant evidence
+7. show data sources
+8. show which agents were used
+
+Example UI:
+
+Agents used:
+Air Quality
+Weather
+Heat Risk
+
+Evidence:
+AQI
+PM2.5
+Temperature
+Humidity
+
+Never display hidden chain-of-thought.
+
+Only display concise reasoning summaries.
+
+==================================================
+PHASE 8 — CLIMATE INTELLIGENCE
+==============================
+
+Build `/climate`.
+
+Include:
+
+* temperature trends
+* heat risk
+* heatwave indicators
+* humidity
+* apparent temperature
+* environmental trends
+* recommendations
+
+Implement Heat Risk Agent.
+
+Show:
+
+Risk Level
+Confidence
+Factors
+Evidence
+Recommendations
+Limitations
+
+==================================================
+PHASE 9 — DISASTER INTELLIGENCE
+===============================
+
+Build `/disaster`.
+
+Create sections for:
+
+Flood Risk
+Wildfire Risk
+
+Flood Risk Agent should use available:
+
+* rainfall
+* precipitation
+* forecast
+* water level information
+* historical information where available
+
+Wildfire Risk Agent should consider available:
+
+* temperature
+* humidity
+* wind
+* dryness
+* historical fire data
+
+If authoritative real-time information is unavailable:
+
+DO NOT fabricate warnings.
+
+Clearly state:
+
+"Real-time disaster data unavailable."
+
+Demo mode can still demonstrate the UI using clearly labeled demo data.
+
+==================================================
+PHASE 10 — WATER INTELLIGENCE
+=============================
+
+Build `/water`.
+
+Include:
+
+* water stress
+* rainfall
+* temperature
+* trend
+* available water indicators
+* recommendations
+
+Implement Water Stress Agent.
+
+Again:
+
+No fabricated water-level measurements.
+
+==================================================
+PHASE 11 — WASTE INTELLIGENCE
+=============================
+
+Build `/waste`.
+
+Provide a useful interface for waste classification.
+
+The intended flow:
+
+Upload image
+→ classify waste
+→ show category
+→ disposal guidance
+→ environmental explanation
+
+Support demo behavior if computer vision/API integration is not configured.
+
+Clearly distinguish:
+
+Demo Classification
+from
+AI Classification
+
+Do not give unsafe disposal instructions for hazardous materials.
+
+==================================================
+PHASE 12 — GREEN ROUTE
+======================
+
+Build `/route`.
+
+Provide a route/environmental exposure interface.
+
+Potential information:
+
+* distance
+* travel time
+* AQI exposure
+* environmental exposure
+* route comparison
+
+Clearly label exposure calculations as estimates.
+
+Do not claim exact pollution exposure without supporting data.
+
+==================================================
+PHASE 13 — REPORTS
+==================
+
+Build `/reports`.
+
+Allow creation of an environmental assessment.
+
+A report should contain:
+
+* location
+* timestamp
+* environmental overview
+* air quality
+* climate risk
+* disaster risk
+* water status
+* key findings
+* recommendations
+* data sources
+* limitations
+
+Clearly distinguish:
+
+Observed Data
+AI Interpretation
+Recommendations
+
+Implement a practical report UI first.
+
+PDF export can be added if useful, but do not block the core application on it.
+
+==================================================
+PHASE 14 — DEMO MODE
+====================
+
+This is extremely important for the hackathon.
+
+Create:
+
+`/demo`
+
+The demo page should provide a guided 3–5 minute experience.
+
+Suggested demo scenario:
+
+Location:
+Udaipur
+
+Scenario:
+
+1. Environmental overview
+2. AQI problem
+3. Pollution analysis
+4. Heat risk
+5. Multi-agent analysis
+6. AI assistant question
+7. Environmental recommendation
+8. Overall climate risk
+9. Report generation
+
+Demo Mode must work without external API keys.
+
+Use deterministic demo data.
+
+Clearly show:
+
+DEMO MODE
+
+Never call demo data "live".
+
+==================================================
+PHASE 15 — LIVE DATA ARCHITECTURE
+=================================
+
+Create a clean abstraction for environmental data providers.
+
+For example:
+
+EnvironmentalDataProvider
+
+Possible implementations:
+
+DemoEnvironmentalDataProvider
+
+LiveEnvironmentalDataProvider
+
+Do not tightly couple UI components to a specific external API.
+
+The application should be able to switch providers through configuration.
+
+Live APIs should be added only when properly configured.
+
+Do not invent API endpoints.
+
+Do not hardcode undocumented endpoints.
+
+==================================================
+PHASE 16 — ERROR HANDLING
+=========================
+
+Every external service can fail.
+
+Handle:
+
+* network failures
+* API errors
+* missing API keys
+* invalid responses
+* rate limits
+* malformed AI output
+* unavailable environmental data
+
+The UI should provide meaningful states:
+
+Loading
+Available
+Unavailable
+Error
+Demo
+
+Avoid blank screens.
+
+==================================================
+PHASE 17 — RESPONSIVENESS
+=========================
+
+The application must work on:
+
+* desktop
+* laptop
+* tablet
+* mobile
+
+Pay particular attention to:
+
+* sidebar
+* charts
+* cards
+* tables
+* assistant
+* report layout
+* navigation
+
+Do not simply shrink the desktop layout.
+
+Create intentional mobile layouts.
+
+==================================================
+PHASE 18 — ACCESSIBILITY
+========================
+
+Implement basic accessibility:
+
+* semantic HTML
+* keyboard navigation
+* visible focus states
+* accessible buttons
+* accessible form labels
+* meaningful ARIA labels where needed
+* sufficient text contrast
+* charts with supporting textual information
+
+Do not rely on color alone to communicate risk.
+
+==================================================
+PHASE 19 — PERFORMANCE
+======================
+
+Keep the application lightweight.
+
+Avoid:
+
+* unnecessary dependencies
+* unnecessary re-renders
+* giant bundles
+* repeated API requests
+* duplicated data fetching
+
+Use:
+
+* lazy loading where appropriate
+* reusable services
+* caching where useful
+* efficient chart rendering
+
+Do not prematurely optimize everything.
+
+==================================================
+PHASE 20 — SECURITY
+===================
+
+Strictly follow:
+
+agent-context/RULES.md
+
+In particular:
+
+* no API keys in frontend
+* no secrets committed
+* no service-role keys exposed
+* validate user input
+* validate AI responses
+* safe error messages
+* server-side AI calls
+* safe file uploads
+* file type/size validation
+
+==================================================
+ENVIRONMENT VARIABLES
+=====================
+
+Create/update:
+
+`.env.example`
+
+Document required variables.
+
+Potential examples:
+
+GEMINI_API_KEY=
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+
+Only include variables actually used by the implementation.
+
+Never insert real credentials.
+
+==================================================
+DEMO-FIRST DEVELOPMENT
+======================
+
+Because this is a hackathon project, prioritize a complete working experience over maximum feature count.
+
+A working flow such as:
+
+Dashboard
+→ Air Analysis
+→ Multi-Agent Analysis
+→ AI Assistant
+→ Recommendation
+→ Report
+
+is more important than having 20 half-built features.
+
+If time/complexity becomes an issue:
+
+Finish P0 first.
+
+Then P1.
+
+Then P2.
+
+Refer to:
+
+agent-context/TASKS.md
+
+==================================================
+CODE QUALITY
+============
+
+Rules:
+
+* TypeScript strictness where practical
+* meaningful naming
+* reusable components
+* small focused functions
+* no giant components
+* no duplicate business logic
+* no unnecessary abstractions
+* no `any` unless genuinely necessary
+* no dead code
+* no commented-out abandoned implementations
+* no fake TODO implementations pretending to work
+
+If something is intentionally not implemented, represent its state honestly.
+
+==================================================
+DOCUMENTATION
+=============
+
+If implementation changes architecture significantly:
+
+Update:
+
+agent-context/ARCHITECTURE.md
+
+If agent responsibilities change:
+
+Update:
+
+agent-context/AGENTS.md
+
+If data handling changes:
+
+Update:
+
+agent-context/DATA-SOURCES.md
+
+If UI design rules change:
+
+Update:
+
+agent-context/UI-UX.md
+
+If priorities change:
+
+Update:
+
+agent-context/TASKS.md
+
+Do not update documentation unnecessarily for tiny implementation details.
+
+==================================================
+VALIDATION
+==========
+
+After implementation:
+
+Run the available:
+
+* install
+* lint
+* typecheck
+* tests
+* production build
+
+Fix all errors you encounter.
+
+Do not stop after writing code.
+
+Actually verify that the application builds.
+
+Check:
+
+* routes
+* imports
+* environment handling
+* frontend/backend communication
+* responsive layout
+* demo mode
+* agent execution
+* error states
+
+==================================================
+IMPORTANT BEHAVIOR
+==================
+
+Do NOT:
+
+* ask me to manually create every file
+* give me only code snippets
+* stop at a high-level plan
+* build only a landing page
+* create fake "AI agents" that are just UI cards
+* fabricate live environmental data
+* expose API keys
+* use placeholder text everywhere
+* create unnecessary documentation
+* over-engineer the architecture
+* rewrite working code without reason
+
+DO:
+
+* inspect the repository
+* read `agent-context/`
+* implement the project
+* create missing files
+* install required dependencies
+* connect the frontend/backend
+* create a functional demo mode
+* build the multi-agent foundation
+* implement the core P0 features
+* test the application
+* fix errors
+* keep the code maintainable
+
+==================================================
+FINAL ACCEPTANCE CRITERIA
+=========================
+
+The project is considered successfully built when:
+
+1. The application starts successfully.
+2. Production build succeeds.
+3. Main navigation works.
+4. Dashboard works.
+5. Air Intelligence works.
+6. Demo Mode works without API keys.
+7. Multi-agent architecture exists and is actually usable.
+8. AI Assistant has a working architecture.
+9. Climate/Heat Intelligence works.
+10. Disaster Intelligence has functional foundations.
+11. Water Intelligence has functional foundations.
+12. Waste and Green Route have functional foundations.
+13. Reports page works.
+14. Live/demo data states are clearly separated.
+15. No secrets are exposed.
+16. Errors are handled gracefully.
+17. Desktop and mobile layouts work.
+18. The UI looks like a polished environmental intelligence product.
+19. The code follows the `agent-context/` rules.
+20. The project is ready to be demonstrated at the hackathon.
+
+START NOW.
+
+First inspect the repository and `agent-context/` files.
+
+Then implement the application directly.
+
+Do not wait for additional instructions unless you encounter a genuinely blocking ambiguity that cannot be resolved from the repository or context.
