@@ -203,6 +203,13 @@ export interface AirPayload {
   errors: string[];
 }
 
+export interface ClimateInsight {
+  text: string;
+  usedGemini: boolean;
+  /** User-friendly AI failure reason when a rules-based fallback is shown. */
+  error?: string;
+}
+
 export interface ClimatePayload {
   location: AppLocation;
   generatedAt: string;
@@ -211,6 +218,7 @@ export interface ClimatePayload {
   states: EnvironmentalData["states"];
   sources: EnvironmentalData["sources"];
   agentRuns: AgentRun[];
+  insight: ClimateInsight;
   errors: string[];
 }
 
@@ -302,6 +310,7 @@ export interface EnvironmentalReport {
   generatedAt: string;
   overallRisk: RiskLevel;
   isAiInterpretation: boolean;
+  usedGemini: boolean;
   sections: ReportSection[];
   keyFindings: string[];
   dataSources: string[];

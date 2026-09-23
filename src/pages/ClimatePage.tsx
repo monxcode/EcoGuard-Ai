@@ -1,4 +1,4 @@
-import { Droplets, Thermometer, Wind } from "lucide-react";
+import { Droplets, Sparkles, Thermometer, Wind } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useApi } from "../hooks/useApi";
 import type { ClimatePayload } from "../../shared/types";
@@ -6,6 +6,7 @@ import { heatIndexCelsius } from "../../shared/aqi";
 import { PageHeader, SectionHeader } from "../components/ui/PageHeader";
 import { DataStateBadge } from "../components/ui/DataStateBadge";
 import { RiskPill } from "../components/ui/RiskPill";
+import { Chip } from "../components/ui/Button";
 import { ErrorState, PageSkeleton } from "../components/ui/states";
 import { AgentResultCard } from "../components/agents/AgentResultCard";
 import { ForecastTimeline } from "../components/charts/ForecastTimeline";
@@ -76,6 +77,29 @@ export default function ClimatePage() {
           </div>
         }
       />
+
+      {/* ── AI climate insight ────────────────────────────── */}
+      <div className="rounded-xl border border-line bg-surface shadow-[0_1px_2px_rgba(26,29,26,0.03)] px-4 sm:px-5 py-4 flex gap-3.5 items-start">
+        <span className="w-8 h-8 rounded-lg bg-blue-soft text-blue flex items-center justify-center shrink-0">
+          <Sparkles className="w-4 h-4" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-blue-2">
+              Climate insight
+            </p>
+            <Chip tone={data.insight.usedGemini ? "blue" : "neutral"}>
+              {data.insight.usedGemini ? "Gemini" : "Rules-based"}
+            </Chip>
+          </div>
+          <p className="mt-1 text-[14px] leading-relaxed text-ink">{data.insight.text}</p>
+          {data.insight.error ? (
+            <p className="mt-1.5 text-[12px] text-ochre-2" role="status">
+              {data.insight.error}
+            </p>
+          ) : null}
+        </div>
+      </div>
 
       {/* ── Current conditions ────────────────────────────── */}
       <div className="grid sm:grid-cols-[1.2fr_1.5fr] bg-surface border border-line rounded-xl shadow-[0_1px_2px_rgba(26,29,26,0.03)] overflow-hidden">

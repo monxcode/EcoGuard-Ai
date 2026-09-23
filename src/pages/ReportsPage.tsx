@@ -152,6 +152,9 @@ export default function ReportsPage() {
               <RiskPill level={report.overallRisk} size="lg" />
             </div>
             <div className="mt-3.5 flex flex-wrap gap-1.5">
+              <Chip tone={report.usedGemini ? "blue" : "neutral"}>
+                {report.usedGemini ? "Gemini interpretation" : "Rules-based interpretation"}
+              </Chip>
               {report.agentsUsed.map((name) => (
                 <Chip key={name} tone="accent">
                   {name}

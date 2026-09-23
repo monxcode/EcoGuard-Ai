@@ -64,6 +64,7 @@ reportsRouter.post(
       generatedAt: new Date().toISOString(),
       overallRisk: outcome.overallRun.result.riskLevel,
       isAiInterpretation: true,
+      usedGemini: outcome.advisory.usedGemini,
       sections,
       keyFindings: cap(
         outcome.domainRuns.map((r) => `${r.agentName}: ${r.result.riskLevel} — ${r.result.summary}`),

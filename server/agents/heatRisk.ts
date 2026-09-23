@@ -1,9 +1,16 @@
+import { z } from "zod";
 import { heatRiskFromIndex } from "../../shared/aqi";
 import type { AgentResult } from "../../shared/types";
-import { round1, type DomainAgentDef } from "./base";
+import { generateValidatedJson } from "../tools/gemini";
+import { cap, round1, type DomainAgentDef } from "./base";
 import { heatHiFromIndex } from "./heatMath";
 
 const HOT_SPELL_THRESHOLD_C = 36;
+
+const heatNarrativeSchema = z.object({
+  explanation: z.string().min(20).max(500),
+  recommendations: z.array(z.string().min(10).max(220)).min(1).max(5),
+});
 
 function consecutiveHotDays(daily: { tempMax: number }[]): number {
   let best = 0;
@@ -21,7 +28,7 @@ function consecutiveHotDays(daily: { tempMax: number }[]): number {
 
 export const heatRiskAgent: DomainAgentDef = {
   name: "Heat Risk (HeatShield)",
-  run(ctx): AgentResult {
+  async run(ctx): Promise<AgentResult> {
     const wx = ctx.data.weather;
     if (!wx) {
       return {
@@ -42,7 +49,7 @@ export const heatRiskAgent: DomainAgentDef = {
     const hotDays = consecutiveHotDays(ctx.data.daily);
     const minTempTonight = ctx.data.daily.length > 0 ? ctx.data.daily[0].tempMin : null;
 
-    const factors = [
+    let factors = [
       `Heat index ${hi} °C from ${wx.temperature} °C and ${wx.humidity}% humidity — EcoGuard's thermal-stress assessment level: ${riskLevel}.`,
     ];
     if (hotDays >= 2) {
@@ -61,7 +68,7 @@ export const heatRiskAgent: DomainAgentDef = {
       );
     }
 
-    const recommendations: string[] = [];
+    let recommendations: string[] = [];
     if (riskLevel === "severe" || riskLevel === "high") {
       recommendations.push(
         "Avoid strenuous outdoor activity between 11:00 and 16:00; move exercise to early morning or evening.",
@@ -77,6 +84,45 @@ export const heatRiskAgent: DomainAgentDef = {
       recommendations.push("Conditions are within a comfortable thermal range for most people.");
     }
     recommendations.push("Follow official heat advisories issued by local authorities.");
+
+    // AI risk explanation + recommendations — interprets the measured values
+    // above only; deterministic fallback preserved on any failure.
+    const ai = await generateValidatedJson(
+      [
+        "You are the Heat Risk agent (HeatShield) of an environmental intelligence system.",
+        "Explain the heat risk in 1 short paragraph and give 2-4 practical recommendations,",
+        "based ONLY on the facts below. Hedged language; no invented numbers; never claim",
+        "official warning status — this is a screening assessment.",
+        "",
+        `Location: ${ctx.data.location.name} (${ctx.data.location.region})`,
+        `Measured: temperature ${wx.temperature} °C, humidity ${wx.humidity}%, wind ${wx.windSpeed} km/h${
+          wx.apparentTemperature !== null
+            ? `, apparent temperature ${wx.apparentTemperature} °C`
+            : ", apparent temperature unavailable"
+        }.`,
+        `Heat index (EcoGuard derived, Rothfusz): ${hi} °C — assessment level: ${riskLevel}.`,
+        ctx.data.daily.length > 0
+          ? `Forecast (not measured): highs ${ctx.data.daily.map((d) => `${d.day} ${d.tempMax}°C`).join(", ")}; consecutive days ≥ ${HOT_SPELL_THRESHOLD_C} °C: ${hotDays}.`
+          : "Forecast: unavailable.",
+        ctx.data.daily.length > 0 && minTempTonight !== null
+          ? `Forecast overnight minimum: ${minTempTonight} °C.`
+          : "Overnight minimum: unavailable.",
+        `Weather data state: ${ctx.data.states.weather}${ctx.data.states.weather === "demo" ? " (demo fixture — not a live observation)" : " (live observation)"}.`,
+        "",
+        'Return JSON: {"explanation": "1 short paragraph", "recommendations": ["...", ...]}.',
+      ].join("\n"),
+      heatNarrativeSchema,
+    );
+
+    if (ai.usedGemini && ai.data) {
+      if (ctx.flags) ctx.flags.usedGemini = true;
+      const explanation = ai.data.explanation.trim();
+      if (explanation) factors = [factors[0], explanation, ...factors.slice(1)];
+      recommendations = cap(
+        [...ai.data.recommendations.map((r) => r.trim()).filter(Boolean), ...recommendations],
+        5,
+      );
+    }
 
     return {
       status: "success",

@@ -69,12 +69,15 @@ export async function runAdvisory(input: AdvisoryInput): Promise<AdvisoryPayload
   );
 
   const template = templateText(input);
-  const text = ai && ai.text.length >= 40 ? ai.text.slice(0, 1200) : template;
+  const usedGemini = ai.usedGemini && ai.text.length >= 40;
+  const text = usedGemini ? ai.text.slice(0, 1200) : template;
 
   const limitations = [
-    ai && ai.text.length >= 40
+    usedGemini
       ? "AI-generated interpretation of the data shown — not an official government or agency advisory."
-      : "Rules-based interpretation of the data shown (Gemini not configured) — not an official advisory.",
+      : ai.error?.includes("not configured")
+        ? "Rules-based interpretation of the data shown (Gemini not configured) — not an official advisory."
+        : `AI interpretation unavailable: ${ai.error ?? "AI returned an unusable response"} — using the rules-based fallback, not an official advisory.`,
     ...cap(input.overall.limitations, 2),
   ];
 
@@ -82,7 +85,7 @@ export async function runAdvisory(input: AdvisoryInput): Promise<AdvisoryPayload
     text,
     agentsUsed,
     isAiInterpretation: true,
-    usedGemini: Boolean(ai && ai.text.length >= 40),
+    usedGemini,
     limitations,
   };
 }
